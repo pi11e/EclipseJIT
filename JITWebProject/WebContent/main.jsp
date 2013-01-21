@@ -5,10 +5,10 @@
 <title>RGraph - Tree Animation</title>
 
 <!-- CSS Files -->
-<link type="text/css" href="../css/base.css" rel="stylesheet" />
-<link type="text/css" href="../css/RGraph.css" rel="stylesheet" />
+<link type="text/css" href="<%=request.getContextPath() %>/css/base.css" rel="stylesheet" />
+<link type="text/css" href="<%=request.getContextPath() %>/css/RGraph.css" rel="stylesheet" />
 
-<!--[if IE]><script language="javascript" type="text/javascript" src="../../Extras/excanvas.js"></script><![endif]-->
+
 
 <!-- JIT Library File -->
 <script language="javascript" type="text/javascript" src="<%=request.getContextPath() %>/lib/jit.js"></script>
