@@ -8,31 +8,41 @@
 
 
 <!-- CSS Files -->
-<link type="text/css" href="<%=request.getContextPath() %>/examples/css/base.css" rel="stylesheet" />
-<link type="text/css" href="<%=request.getContextPath() %>/examples/css/RGraph.css" rel="stylesheet" />
+<link type="text/css" href="/JITWebProject/examples/css/base.css" rel="stylesheet" />
+<link type="text/css" href="/JITWebProject/examples/css/RGraph.css" rel="stylesheet" />
 
-<!-- kinesis stylesheet -->
+
+<!--  kinesis stuff  -->
+<!-- 
 <link rel="stylesheet" type="text/css" href="http://cdn.kinesis.io/kinesis.css"/>
 
-<!-- kinesis js sdk -->
+
+
 <script src="http://cdn.kinesis.io/kinesis-js-sdk.min.js"></script>
 <script>    
   var kinesis = new Kinesis; // initialize kinesis
   // start adding gestures from here //
 </script>
-
+ -->
+ 
+ 
 <!-- JIT Library File -->
-<script language="javascript" type="text/javascript" src="<%=request.getContextPath() %>/lib/jit.js"></script>
+<script language="javascript" type="text/javascript" src="/JITWebProject/lib/jit.js"></script>
 
 <!-- Example File -->
-<script language="javascript" type="text/javascript" src="<%=request.getContextPath() %>/graph.js"></script>
+<script language="javascript" type="text/javascript" src="/JITWebProject/graph.js" />
 </head>
 
+
+
 <body onload="init();">
+
+
 <div id="center-container">
 	<div id="infovis"></div>    
 </div>
 
 <div id="log"></div>
+
 </body>
 </html>

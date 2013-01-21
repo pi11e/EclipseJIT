@@ -475,5 +475,5 @@ function init(){
     });
     //end
     //append information about the root relations in the right column
-    $jit.id('inner-details').innerHTML = rgraph.graph.getNode(rgraph.root).data.relation;
+    //$jit.id('inner-details').innerHTML = rgraph.graph.getNode(rgraph.root).data.relation;
 }
