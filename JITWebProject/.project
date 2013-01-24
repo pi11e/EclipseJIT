@@ -33,4 +33,11 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.wst.jsdt.core.jsNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>servlet-api.jar</name>
+			<type>1</type>
+			<locationURI>PARENT-3-PROJECT_LOC/Tomcat/apache-tomcat-7.0.34/lib/servlet-api.jar</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
