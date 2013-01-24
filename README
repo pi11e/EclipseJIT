@@ -1,0 +1,13 @@
+Eclipse JIT Project
+
+Integrates the Java InfoVis Toolkit (www.thejit.org) into a simple Eclipse Web project
+running on a tomcat 7 server.
+
+Initially, the RGraph sample of JIT is included and will run upon starting the graph.js 
+file.
+
+Goal of this project is to integrate a customized version of the JIT RGraph with some form 
+of gesture control using the MS Kinect for Windows sensor.
+Potential Kinect-related projects to use:
+- JNect
+- Kinesis.io
