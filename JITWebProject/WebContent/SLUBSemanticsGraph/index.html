@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--suppress HtmlUnknownTarget -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de_DE" lang="de_DE">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta http-equiv="Content-Script-Type" content="text/javascript"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+  <link rel="shortcut icon" href="images/favicon.ico"
+        type="image/vnd.microsoft.icon"/>
+  <link rel="icon" href="images/favicon.png" type="image/png"/>
+  <link rel="stylesheet" type="text/css" href="basic.css"/>
+  <title>DEMO</title>
+</head>
+<body>
+
+
+	<!-- entfernt: 
+		div id="searchbar"
+		div id="rightcol"
+		-->
+
+
+
+
+
+
+
+<div id="contentpos" class="EXLCustomLayoutContainer centring">
+<div id="leftcol" class="EXLCustomLayoutContainer ">
+  <div id="exlidFacetTile" class="EXLCustomLayoutTile EXLFacetTile">
+    <div id="resultTabs" class="avglResultTabs">
+      <ul>
+        <li class="facetSearch EXLSearchTabSelected"><a href="#" title=""><span
+            class="facetSearchIcon"></span>Facettenbaum</a></li>
+        <li class="graphicSearch"><a href="#" title=""><span
+            class="graphicSearchIcon"></span>Grafische Suche</a></li>
+      </ul>
+    </div>
+    <div id="ns-avgl-facettree" class="sidebarContainer noselect nodrag">
+      <div class="containerend"></div>
+    </div>
+    <div id="ns-avgl-facetgraph-breadcrumb"></div>
+    <div id="ns-avgl-graph-zoom" class="noselect"></div>
+    <div id="ns-avgl-facetgraph" class="noselect nodrag">
+      <div id="ns-avgl-facetgraph-overlay"></div>
+      <div id="ns-avgl-facetgraph-infovis"></div>
+    </div>
+    <p id="jsnotice">
+      Javascript ist in Ihrem Browser deaktiviert. Diese Seite ben&ouml;tigt
+      Javascript um ordnungsgem&auml;&szlig; zu funktionieren. Bitte
+      <a href="http://www.enable-javascript.com/de/"> aktivieren Sie Javascript
+        in Ihrem Browser</a>!
+    </p>
+
+    <div class="betaBox">
+      <h3>Beta-Version</h3>
+
+      <p>Bitte helfen Sie uns die finale Version von
+        <strong>SLUBsematics</strong> zu einem ausgereiften und fehlerfreien
+        Angebot zu machen. Wir sind Ihnen für jedewede Rückmeldungen zu
+        fehlerhaftem oder inkonsistentem Verhalten der Anwendung sehr dankbar.
+      </p>
+
+      <p>Sende Sie uns einfach eine E-Mail, im Idealfall mit einem Screenshot
+        des Fehlers, an <a
+            href="mailto:web@slub-dresden.de?subject=SLUBsematics-Feedback">web@slub-dresden.de</a>
+        oder nutzen Sie unser <a
+            href="http://www.slub-dresden.de/schreiben-sie-uns/"
+            title="zum Kontaktformular">Kontakt-Formular</a>.
+        <strong>Danke.</strong></p>
+    </div>
+    <div id="ns-avgl-feedback">
+      <h6><span class="arrow up"></span>SLUBsemantics-Feedback</h6>
+
+      <div class="section">
+        <label>Thema ausw&auml;hlen
+          <!-- <fmt:message key="facets.feedback.subject"/> -->
+          <select>
+            <option value="-1">Bitte ausw&auml;hlen:</option>
+            <!-- <fmt:message key="facets.feedback.choose_option"/> -->
+            <option value="0" disabled="disabled">----------------</option>
+            <option value="1">Verwendung der Suche und den Funktionen</option>
+            <!-- <fmt:message key="facets.feedback.use_of_search"/> -->
+            <option value="2">Darstellungsprobleme in der Suche</option>
+            <!-- <fmt:message key="facets.feedback.display_of_search"/> -->
+            <option value="3">Verst&auml;ndnis der Suchergebnisse</option>
+            <!-- <fmt:message key="facets.feedback.results"/> -->
+            <option value="4">Sonstiges</option>
+            <!-- <fmt:message key="facets.feedback.other"/> -->
+          </select>
+        </label>
+        <label>Ihre Frage
+          <!-- <fmt:message key="facets.feedback.text_label"/> -->
+          <textarea cols="15" rows="5"></textarea>
+        </label>
+        <label> Ihre E-Mail Adresse
+          <!-- <fmt:message key="facets.feedback.email"/> -->
+          <input type="text"/>
+        </label>
+        <button class="submit">Senden</button>
+        <!-- <fmt:message key="facets.feedback.submit"/> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="EXLCustomLayoutContainer floatclear"></div>
+</div>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="polyfill.js"></script>
+<script type="text/javascript" src="jit.custom.js"></script>
+<script type="text/javascript" src="avgl.js"></script>
+<script type="text/javascript" src="graph.js"></script>
+<script type="text/javascript">
+  jQuery(document).ready(function() {
+    avgl._resultContainer = "#sideResultContainer";
+    jQuery("#resultTabs").find(".facetSearch").removeClass("EXLSearchTabSelected");
+    jQuery("#ns-avgl-facettree").hide();
+    jQuery(".graphicSearch").addClass("EXLSearchTabSelected");
+    jQuery("#ns-avgl-facetgraph,#ns-avgl-facetgraph-breadcrumb,#ns-avgl-graph-zoom").show();
+    avgl.load.graph();
+  });
+</script>
+</body>
+</html>
