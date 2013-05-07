@@ -14,8 +14,10 @@ avgl.Graph = function(data) {
     //change distance between nodes (default is 100)
     levelDistance: levelDistance,
     //SLUB limit sidebar to 550
-    width: 550,
-    height: 3 * levelDistance,
+//    width: 550,
+//    height: 3 * levelDistance,
+    width: document.width,
+    height: document.height,
     // no fancy movements, other value would be 'polar'
     interpolation: 'linear',
     //values are 'full' -> all is red, 'breadcrumb', -> like BC,

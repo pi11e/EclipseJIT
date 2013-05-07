@@ -22,7 +22,8 @@ img { border: none; }
 
 
 #page { position: relative; min-height:100%; width: 100%;  }
-.centring { position: relative; width: 900px; height: 100%; margin: 0 0 0 30%; }
+.centring { position: absolute; width: 100%; height: 100%; margin: 0 0 0 0; }
+/*.centring { position: relative; width: 900px; height: 100%; margin: 0 0 0 30%; }*/
 #header { position: relative; width: 100%; height: 300px; background: url(../images/headbg.png) repeat-x 0 -1px; padding: 0 900px 0 0; }
 #navbarbg { position: absolute; top: 30px; left: 0; width: 100%; height: 70px; background: url(../images/navbarbg.png) repeat-x 0 0;}
 
@@ -98,7 +99,7 @@ input#goButton:active { background: url(../images/searchbtn.png) no-repeat 1px 1
 
 
 #content { position: relative; padding: 0 0 510px 0; min-height: 100px; font-size: 1.2em; }
-#leftcol { position: relative; float: left; width: 570px; }
+/*#leftcol { position: relative; float: left; width: 570px; }*/
 #leftcol .rootline { position: relative; list-style-type: none; font-size: 11px; color: #666; margin: 0; filter:alpha(opacity=50); -moz-opacity:0.5; -khtml-opacity: 0.5; opacity: 0.5; }
 #leftcol .rootline:hover { filter:alpha(opacity=100); -moz-opacity: 1; -khtml-opacity: 1; opacity: 1; }
 #leftcol .rootline li { position: relative; float: left; font-weight: normal; }
@@ -698,12 +699,15 @@ a.avglsem { background: none; padding: 0; margin: 0; }
   user-drag         : none;
 }/* facet graph theme */
 #ns-avgl-facetgraph {
-  height              : 360px;
+  /*height              : 360px;*/
+  height			  : 100%;
+  width				  : 100%;
   background-color    : #fff;
   color               : #278;
-  width               : 550px;
-  max-width           : 550px;
+  /*width               : 550px;*/
+  /*max-width           : 550px;*/
   margin              : auto;
+  
 }
 
 #ns-avgl-facetgraph:after {
@@ -725,7 +729,8 @@ a.avglsem { background: none; padding: 0; margin: 0; }
 
 #ns-avgl-facetgraph-overlay {
   position         : absolute;
-  height           : 360px;
+  /*height           : 360px;*/
+  height		   : 100%
   opacity          : 0.7;
   filter:progid:DXImageTransform.Microsoft.BasicImage(opacity = .7);
   width            : 100%;
@@ -743,6 +748,7 @@ a.avglsem { background: none; padding: 0; margin: 0; }
   margin   : auto;
   overflow : hidden;
   cursor   : move;
+  
 }
 
 :root *> #ns-avgl-facetgraph-infovis {
@@ -756,7 +762,8 @@ a.avglsem { background: none; padding: 0; margin: 0; }
 }
 
 #ns-avgl-facetgraph-infovis-canvaswidget {
-  margin-left : -40px;
+  /*margin-left : -40px;*/
+  border-style: dotted;
 }
 
 #ns-avgl-facetgraph-infovis-bkcanvas {
