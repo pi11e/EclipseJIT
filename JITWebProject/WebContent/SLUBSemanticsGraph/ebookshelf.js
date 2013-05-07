@@ -38,14 +38,6 @@ setTimeout(function()
 	var canvas = document.getElementById("ns-avgl-facetgraph-infovis-canvas");
 	var context = canvas.getContext("2d");
 	
-	
-	
-	// stretching the canvas this way breaks the lines and labels
-    //canvas.width = document.width;
-    //canvas.height = document.height;
-	
-    console.log("canvas width = " + canvas.width +" | height = " + canvas.height);
-    
     console.log('after');
 },500);
 
