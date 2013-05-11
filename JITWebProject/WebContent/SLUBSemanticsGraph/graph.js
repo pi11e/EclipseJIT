@@ -14,6 +14,8 @@ avgl.Graph = function(data) {
     //change distance between nodes (default is 100)
     levelDistance: levelDistance,
     //SLUB limit sidebar to 550
+    
+    // [ebookshelf] changed graph width / height properties for fullscreen support
 //    width: 550,
 //    height: 3 * levelDistance,
     width: document.width,
@@ -108,6 +110,7 @@ avgl.Graph = function(data) {
     }
   });
   self.init(data);
+  
 };
 
 avgl.Graph.prototype.init = function(data) {

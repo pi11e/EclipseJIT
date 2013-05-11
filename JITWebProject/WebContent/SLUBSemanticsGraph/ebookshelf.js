@@ -38,6 +38,43 @@ setTimeout(function()
 	var canvas = document.getElementById("ns-avgl-facetgraph-infovis-canvas");
 	var context = canvas.getContext("2d");
 	
+	// print all properties of avgl.Graph:
+//	for(var propertyName in avgl.Graph)
+//	{
+//		console.log(propertyName);
+//	}
+	
+	// onclick for graph:
+//	avgl.Graph.prototype._onClick
+	
+	var someId = 0;
+	console.log("getSomeNodeId(" + someId + ") = " + getSomeNodeId(someId));
+	
     console.log('after');
 },500);
 
+
+var getSomeNodeId = function (id)
+{
+	// graph.js 191:
+	//   return this.rgraph.graph.getNode(id);
+	// yields rgraph === undefined!
+
+	return avgl.Graph.prototype._getNode(id);
+};
+
+// functions required for graph manipulation:
+
+// - node highlighting 
+//		(visually emphasizing one node, allowing clear distinction from other nodes)
+// - node selection 
+//		(animated centering of the node and its first level subnodes)
+// - graph zooming
+//		(animated extension/compression of edge lengths to increase / decrease on-screen node density)
+// - open / close node details
+//		(if selected node is a leaf - i.e. object - node, show its image and description)
+
+
+// To Do:
+// expose above functionality
+// -> e.g. control node selection (onClick method) programmatically
