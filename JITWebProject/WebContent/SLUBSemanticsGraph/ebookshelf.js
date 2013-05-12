@@ -38,17 +38,16 @@ setTimeout(function()
 	var canvas = document.getElementById("ns-avgl-facetgraph-infovis-canvas");
 	var context = canvas.getContext("2d");
 	
-	// print all properties of avgl.Graph:
-//	for(var propertyName in avgl.Graph)
-//	{
-//		console.log(propertyName);
-//	}
 	
-	// onclick for graph:
-//	avgl.Graph.prototype._onClick
+	console.log("this = " + this); // this = [object Window]
+	console.log("this.kinectComponent.rgraph = " + this.kinectComponent.rgraph);
 	
-	var someId = 0;
-	console.log("getSomeNodeId(" + someId + ") = " + getSomeNodeId(someId));
+	var someId = 840468; // node name "Beugungsintegral"
+	var someNode = getSomeNodeId(someId);
+	console.log(someNode.name); // someNode.name === "Beugungsintegral" = true :)
+	console.log("getSomeNodeId(" + someId + ") = " + someNode);
+	
+
 	
     console.log('after');
 },500);
@@ -60,7 +59,7 @@ var getSomeNodeId = function (id)
 	//   return this.rgraph.graph.getNode(id);
 	// yields rgraph === undefined!
 
-	return avgl.Graph.prototype._getNode(id);
+	return this.kinectComponent.rgraph.graph.getNode(id);
 };
 
 // functions required for graph manipulation:

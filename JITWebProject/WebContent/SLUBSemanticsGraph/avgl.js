@@ -139,14 +139,16 @@ avgl.unicode = {
   }
 };
 
-avgl.load = {
-  graph: function() {
-    typeof ns_avgl_jsondata_graph == 'undefined' && jQuery.getScript(
-        'graph_data.js', function() {
-          new avgl.Graph(ns_avgl_jsondata_graph);
-        }
-    );
-  }
+avgl.load = 
+{
+		graph: function() 
+		{
+			typeof ns_avgl_jsondata_graph == 'undefined' && jQuery.getScript('graph_data.js', function() 
+					{
+							new avgl.Graph(ns_avgl_jsondata_graph);
+					}
+			); // end of jQuery.getScript(...)
+		} // end of avgl.load.graph()
 };
 
 /**

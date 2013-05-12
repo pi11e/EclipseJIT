@@ -1,12 +1,12 @@
 
 
-
 /**
  * @constructor
  */
 avgl.Graph = function(data) {
   var self = this,
       levelDistance = 120;
+  console.log("avgl.Graph called");
   this.$overlay = jQuery('#ns-avgl-facetgraph-overlay');
   self.rgraph = new $jit.RGraph({
     //id of the visualization container
@@ -116,10 +116,17 @@ avgl.Graph = function(data) {
 avgl.Graph.prototype.init = function(data) {
   var self = this;
   //load JSON data.
+  
+  
   self.rgraph.loadJSON(data);
   //remove book count from root node
   var tmp = self.rgraph.root && self._getNode(self.rgraph.root);
   tmp && tmp.data && tmp.data.cnt && (delete tmp.data.cnt);
+  
+  
+  window.kinectComponent.rgraph = self.rgraph;
+  console.log("global window.kinectComponent.graph assigned: " + window.kinectComponent.rgraph);
+  
   //compute positions and plot.
   self.rgraph.refresh();
 
@@ -204,11 +211,11 @@ avgl.Graph.prototype.buildBreadcrumb = function(doNotSave) {
       name,
       hellip;
 
-  doNotSave || avgl.setTemporaryItem('avgl.gbc', jQuery.toJSON({
-    path: self.rgraph.nodesInPath,
-    hist: self.rgraph.overallNodeHistory,
-    hmap: self.rgraph.nodeIdTitleMap
-  }));
+//  doNotSave || avgl.setTemporaryItem('avgl.gbc', jQuery.toJSON({
+//    path: self.rgraph.nodesInPath,
+//    hist: self.rgraph.overallNodeHistory,
+//    hmap: self.rgraph.nodeIdTitleMap
+//  }));
 
   for (var i = 0, l = path.length - 1, n; n = path[i]; i++) {
     nametag = map[n];
