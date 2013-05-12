@@ -37,41 +37,21 @@ setTimeout(function()
 
 	var canvas = document.getElementById("ns-avgl-facetgraph-infovis-canvas");
 	var context = canvas.getContext("2d");
-	
+	var rgraph = this.kinectComponent.rgraph;
 	
 	console.log("this = " + this); // this = [object Window]
-	console.log("this.kinectComponent.rgraph = " + this.kinectComponent.rgraph);
+	console.log("this.kinectComponent.rgraph = " + rgraph);
 	
 	var someId = 840468; // node name "Beugungsintegral"
-	var someNode = getSomeNodeId(someId);
-	console.log(someNode.name); // someNode.name === "Beugungsintegral" = true :)
-	console.log("getSomeNodeId(" + someId + ") = " + someNode);
+	var someNode = rgraph.graph.getNode(someId);
 	
-
+	console.log("getSomeNodeId(" + someId + ") = " + someNode + " with name " + someNode.name);
+	console.log(window.hasOwnProperty('$jit'));
 	
     console.log('after');
 },500);
 
 
-var getSomeNodeId = function (id)
-{
-	// graph.js 191:
-	//   return this.rgraph.graph.getNode(id);
-	// yields rgraph === undefined!
-
-	return this.kinectComponent.rgraph.graph.getNode(id);
-};
-
-// functions required for graph manipulation:
-
-// - node highlighting 
-//		(visually emphasizing one node, allowing clear distinction from other nodes)
-// - node selection 
-//		(animated centering of the node and its first level subnodes)
-// - graph zooming
-//		(animated extension/compression of edge lengths to increase / decrease on-screen node density)
-// - open / close node details
-//		(if selected node is a leaf - i.e. object - node, show its image and description)
 
 
 // To Do:
