@@ -6,15 +6,33 @@
 this.kinectComponent = {
 		global: this, // reference to global context; this === window (usually)
 		rgraph : undefined, // jit rgraph instance
-		highlightedNode: undefined,
+		highlightedNode: undefined, // a highlighted Graph.Node instance
+		
 		// note: in function scope, "this" is the kinect component itself
 		//functions required for graph manipulation:
 
 		//- node highlighting 
 //				(visually emphasizing one node, allowing clear distinction from other nodes)
-		highlightNode : function(nodeId)
+		toggleHighlightForNode : function(node)
 		{
-			
+			if(this.isNode(node))
+			{
+				// does the node have a highlighted color?
+				// does the node have a regular color?
+				
+				
+			}
+		},
+		setHighlightedNode : function(node)
+		{
+			// if given node isn't already highlighted,
+			if(this.highlightedNode !== node) // note: this.highlightedNode may be undefined at this point if no previous highlighting has happened
+			{
+				console.log("setting highlight for node " + node.name); // log the new node
+				this.toggleHighlightForNode(this.highlightedNode); // turn currently highlighted node "off"
+				this.highlightedNode = node; // set new highlighted node
+				this.toggleHighlightForNode(this.highlightedNode); // turn currently highlighted node "on"
+			}
 		},
 		//- node selection 
 //				(animated centering of the node and its first level subnodes)
@@ -57,11 +75,14 @@ this.kinectComponent = {
 		
 		isNode : function(nodeObject)
 		{
-			var jitDeclared = window.hasOwnProperty('$jit');
-			var isJitGraphNode = nodeObject.constructor === $jit.Graph.Node; 
-			var nodeInGraph = typeof this.rgraph.graph.getNode(nodeObject.id) !== 'undefined';
-			
-			return jitDeclared && isJitGraphNode && nodeInGraph;
+			if(nodeObject != undefined)
+			{
+				var jitDeclared = window.hasOwnProperty('$jit');
+				var isJitGraphNode = nodeObject.constructor === $jit.Graph.Node; 
+				var nodeInGraph = typeof this.rgraph.graph.getNode(nodeObject.id) !== 'undefined';
+				
+				return jitDeclared && isJitGraphNode && nodeInGraph;
+			}
 		}
 }; 
 

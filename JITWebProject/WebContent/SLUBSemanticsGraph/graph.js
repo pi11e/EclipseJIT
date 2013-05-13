@@ -52,6 +52,7 @@ avgl.Graph = function(data) {
       },
       onMouseEnter: function(node) {
         node && (function() {
+        	window.kinectComponent.setHighlightedNode(node);
           self.rgraph.canvas.getElement().style.cursor = 'pointer';
         })();
       },
