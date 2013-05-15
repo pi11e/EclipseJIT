@@ -186,11 +186,13 @@ avgl.Graph.prototype._onClick = function(node, event) {
       href = node.data.href,
       title = node.name;
   avgl.setTemporaryItem('avgl.grt', target);
+  
 
   return self.rgraph.onClick(target, {
     hideLabels: false,
-    onComplete: function() {
-      self.rgraph.controller.onComplete();
+    onComplete: function() 
+    {
+    	self.rgraph.controller.onComplete();
     }
   });
 };
@@ -267,18 +269,20 @@ avgl.Graph.prototype.buildBreadcrumb = function(doNotSave) {
   }
 };
 
-avgl.Graph.prototype.buildSlider = function(prevZL) {
-  if (prevZL != null) {
-    prevZL = +prevZL;
-    if (prevZL == prevZL) {
-      this.$zDiv.slider('value', prevZL).trigger("slide", {
-        value:prevZL,
-        doNotSave : true
-      });
-    }
-  } else {
-    prevZL = this.rgraph.canvas.zoomLevel;
-    avgl.setTemporaryItem('avgl.gzl', prevZL);
-    this.$zDiv.slider('value', prevZL);
-  }
+avgl.Graph.prototype.buildSlider = function(prevZL) 
+{
+	return;
+//  if (prevZL != null) {
+//    prevZL = +prevZL;
+//    if (prevZL == prevZL) {
+//      this.$zDiv.slider('value', prevZL).trigger("slide", {
+//        value:prevZL,
+//        doNotSave : true
+//      });
+//    }
+//  } else {
+//    prevZL = this.rgraph.canvas.zoomLevel;
+//    avgl.setTemporaryItem('avgl.gzl', prevZL);
+//    this.$zDiv.slider('value', prevZL);
+//  }
 };

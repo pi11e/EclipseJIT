@@ -25,8 +25,19 @@
 
 
 
-
-
+<div id="gestureButtons">
+<button onclick="gesture(1)">highlight next node</button>
+<button onclick="gesture(2)">highlight previous node</button>
+<button onclick="gesture(3)">center highlighted node</button>
+<button onclick="gesture(4)">go back</button>
+<button onclick="gesture(5)">home</button>
+<script type="text/javascript">
+	var gesture = function(gestureCode)
+	{
+		window.kinectComponent.kinectCallbackHandler(gestureCode);
+	}
+</script>
+</div>
 
 <div id="contentpos" class="EXLCustomLayoutContainer centring">
 <div id="leftcol" class="EXLCustomLayoutContainer ">

@@ -8923,7 +8923,7 @@ var globals = this;
       'circle': {
         'render': function(node, canvas) {
           /* Change 14 Begin insert */
-          if (node._depth > 1)
+          if (node._depth > 1) // nodes with depth 2 and more will not be rendered; this limits the visible nodes to one root (depth === 0) and its immediate subnodes (depth === 1)
             return;
           /* Change 14 End */
           var pos = node.pos.getc(true),
@@ -8934,6 +8934,21 @@ var globals = this;
             ctx.fillStyle = ctx.strokeStyle = SLUB_COLORS.act; // paint red circle (act = #c00)
             ctx.save();
           }
+          else if(node.data.isHighlighted !== undefined)
+          {
+        	  if(node.data.highlightColor !== undefined && node.data.isHighlighted)
+        	  {
+        		  // if node is highlighted, use corresponding color
+        		  ctx.fillStyle = ctx.strokeStyle = node.data.highlightColor;
+        	  }
+        	  else
+    		  {
+        		  // else, use regular color
+        		  ctx.fillStyle = ctx.strokeStyle = node.data.regularColor;
+    		  }
+        	  ctx.save();
+          }
+          
           if (node._depth) {
             dim *= .63;
           }

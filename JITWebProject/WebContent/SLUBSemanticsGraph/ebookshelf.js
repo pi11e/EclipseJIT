@@ -1,11 +1,8 @@
 /**
  * 
  */
-//var graph = avgl.Graph.rgraph.canvas.getElement(); // rgraph undefined
-// get canvas element
-//var canvas = document.getElementById("ns-avgl-facetgraph-infovis-canvas");
-//var ctx = document.getElementById("ns-avgl-facetgraph-infovis-canvas").getContext('2d');
-//console.log(canvas);
+// NOTE: RGraph rendering function at jit.custom.js line 8924
+
 
 console.log('before');
 setTimeout(function()
@@ -42,11 +39,22 @@ setTimeout(function()
 	console.log("this = " + this); // this = [object Window]
 	console.log("this.kinectComponent.rgraph = " + rgraph);
 	
-	var someId = 840468; // node name "Beugungsintegral"
-	var someNode = rgraph.graph.getNode(someId);
+//	var someId = 840468; // node name "Beugungsintegral"
+//	var someNode = rgraph.graph.getNode(someId);
+//	
+//	console.log("getSomeNodeId(" + someId + ") = " + someNode + " with name " + someNode.name);
+//	console.log(window.hasOwnProperty('$jit'));
 	
-	console.log("getSomeNodeId(" + someId + ") = " + someNode + " with name " + someNode.name);
-	console.log(window.hasOwnProperty('$jit'));
+	// setup with highlighting color
+	// http://philogb.github.io/jit/static/v20/Docs/files/Graph/Graph-js.html#Graph.Util.eachNode
+	this.kinectComponent.rgraph.graph.eachNode(function(node)
+		{
+			// perform this for all nodes in the graph
+			node.data.regularColor = "#278";
+			node.data.highlightColor = "#F90";
+			node.data.isHighlighted = false;
+		}
+	);
 	
     console.log('after');
 },500);
