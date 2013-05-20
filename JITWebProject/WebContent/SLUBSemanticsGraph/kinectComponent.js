@@ -1,5 +1,15 @@
 /**
- * 
+ * TODO:
+ *  - customize CSS for proper size arrangement of RGraph-canvas
+ *  - implement the following functions:
+ *  	> callbackHandler cases
+ *  - bugs / irregularities:
+ *  	> nodes will still be highlighted even if not visible,
+ *  		-> nodes are still "there" when not in visible level!!
+ *  		-> nodes must be unavailable for highlighting when invisible
+ *  	> hightlighting must only be applied to sublevel nodes, i.e. not the centered one
+ *  		and not the "history" node which is the centered node's predecessor (in rgraph.nodesInPath)
+ *  	> when reverting 1 level back up to start, only the second time works even though it logs twice
  */
 
 // NOTE: RGraph rendering function at jit.custom.js line 8924
@@ -22,6 +32,20 @@ this.kinectComponent =
 //				(visually emphasizing one node, allowing clear distinction from other nodes)
 		setHighlightedNode : function(node)
 		{
+			// TODO: check with isNode(node)
+			if(!this.isNode(node))
+				return;
+			
+			// only allow highlighting of currently visible nodes, i.e.
+			// the current root/centered node's immediate successors
+			var rootId = this.rgraph.root;
+			var rootNode = this.rgraph.graph.getNode(this.rgraph.root);
+			
+			var level = 1; // default 0
+			// Collects all subnodes for a specified node.  The level parameter filters nodes having relative depth of level from the root node.
+			var visibleSubNodes = this.rgraph.graph.getSubnodes(rootNode, level);
+			
+			
 			// if given node isn't already highlighted,
 			if(this.highlightedNode !== node) // note: this.highlightedNode may be undefined at this point if no previous highlighting has happened
 			{
@@ -37,13 +61,24 @@ this.kinectComponent =
 				// turn newly highlighted node "on"
 				this.highlightedNode.data.isHighlighted = true;
 				
+				// re-draw graph
 				this.rgraph.plot(); 
 
 			}
 		},
-		//- node selection 
-//				(animated centering of the node and its first level subnodes)
-		selectNode : function(nodeId)
+		/**
+		 * Triggers an animated view centering to the given node.
+		 * @param node
+		 */
+		centerNode : function(node)
+		{
+			this.centerNodeWithId(node.id);
+		},
+		/**
+		 * Triggers an animated view centering to the given node id.
+		 * @param nodeId
+		 */
+		centerNodeWithId : function(nodeId)
 		{
 			if(this.isNode(this.rgraph.graph.getNode(nodeId)))
 			{
@@ -53,18 +88,34 @@ this.kinectComponent =
 				});
 			}
 		},
-		selectHighlightedNode : function()
+		/**
+		 * Centers the currently highlighted node
+		 * @see setHighlightedNode
+		 */
+		centerHighlightedNode : function()
 		{
 			if(this.isNode(this.highlightedNode))
 			{
-				this.selectNode(this.highlightedNode.id);
+				console.log("centering highlighted node " + this.highlightedNode.name);
+				this.centerNodeWithId(this.highlightedNode.id);
 			}
 		},
+		
 		//- graph zooming
 //				(animated extension/compression of edge lengths to increase / decrease on-screen node density)
+		/**
+		 * Zooms the graph by a given zoom factor
+		 * @param zoom - a zoom factor (default 1.0 = 100%)
+		 */
 		setZoomLevel : function(zoom)
 		{
-
+			var rgraph = this.rgraph;
+			
+			window.$jit.Graph.Util.eachNode(rgraph.graph, function(n) { 
+				n.endPos.rho = n._depth * rgraph.config.levelDistance * zoom; });
+				rgraph.fx.animate({
+				    modes:['polar']
+				});
 		},
 		//- open / close node details
 //				(if selected node is a leaf - i.e. object - node, show its image and description)
@@ -81,40 +132,50 @@ this.kinectComponent =
 			{
 			case 1:
 				// highlight next node
+				
 				break;
 			case 2:
 				// highlight prev node
+				
 				break;
 			case 3:
 				// center highlighted node
+				this.centerHighlightedNode();
 				break;
 			case 4:
 				// go back
 				// node history contains the visited node ids in order of appearance
-				console.log(this.rgraph.overallNodeHistory);
-				
-				// besser: pop last history item, then select (new) last history item
 				
 				
-				// let i be the index of currently centered node in this.rgraph.overallNodeHistory;
-				// => this.selectNode(this.rgraph.overallNodeHistory[i-1].id);
-//				var i = 0;
-//				while(i < this.rgraph.overallNodeHistory.length)
-//				{
-//					if(this.rgraph.overallNodeHistory[i] === this.rgraph.root)
-//					{
-//						console.log("reverting to node " + this.rgraph.graph.getNode(this.rgraph.overallNodeHistory[i-1]).name);
-//						this.selectNode(this.rgraph.overallNodeHistory[i-1]);
-//						break;
-//					}
-//					i++;
-//				}
+				var nodePath = this.rgraph.nodesInPath;
+				
+				// nodePath now contains an array of node ids from "start" node to current node
+				// to move up the path by one level, we need to center on the node that appears
+				// in the second to last position in this list
+				
+				// if no valid path longer than 1 node exists, do nothing
+				if(nodePath === undefined || nodePath.length < 2)
+					return;  
+				else
+				{   // we can safely assume nodePath contains at least two elements
+					// in this case, we want to select the node whose id is precursor to the last
+					// id in the current nodePath
+					
+					// example: 
+					// nodePath = ["0", "10", "101"]; we want to select node id "10"
+					// nodePath.length = 3, last element index is 2, index of "10" is 1
+					this.centerNodeWithId(nodePath[nodePath.length-2]);
+					
+					// DEBUG
+					var tempNodeName = this.rgraph.graph.getNode(nodePath[nodePath.length-2]).name;
+					console.log("moving up one level to node " + tempNodeName);
+				}
 				
 				
 				break;
 			case 5:
 				// center home node (has id 0)
-				this.selectNode(0);
+				this.centerNodeWithId(0);
 				break;
 			default:
 				break;

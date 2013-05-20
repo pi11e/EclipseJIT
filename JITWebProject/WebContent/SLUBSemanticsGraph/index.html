@@ -21,29 +21,41 @@
 		div id="searchbar"
 		div id="rightcol"
 		-->
-
+<table role="presentation">
+<tr>
+<td>
 <!-- websocket support & kinect status -->
 <div id="websocket" class="kinectInfo">
 	Status: <label id="status">None</label>
 	
 	<canvas id="canvas" width="400" height="450"></canvas>
 	<script type="text/javascript" src="../websocket.js"></script>
+	
+	
+	<div id="gestureButtons">
+	<p>
+	<button onclick="gesture(1)">highlight next node</button>
+	<button onclick="gesture(2)">highlight previous node</button>
+	<BR>&nbsp;<BR>
+	</p>
+	<p>
+	<button onclick="gesture(3)">center highlighted node</button>
+	<button onclick="gesture(4)">go back 1 level</button>
+	</p>
+	<BR>&nbsp;<BR>
+	<button onclick="gesture(5)">home</button>
+	<script type="text/javascript">
+		var gesture = function(gestureCode)
+		{
+			window.kinectComponent.kinectCallbackHandler(gestureCode);
+		}
+	</script>
+	</div>
 </div>
-
-<div id="gestureButtons">
-<button onclick="gesture(1)">highlight next node</button>
-<button onclick="gesture(2)">highlight previous node</button>
-<button onclick="gesture(3)">center highlighted node</button>
-<button onclick="gesture(4)">go back</button>
-<button onclick="gesture(5)">home</button>
-<script type="text/javascript">
-	var gesture = function(gestureCode)
-	{
-		window.kinectComponent.kinectCallbackHandler(gestureCode);
-	}
-</script>
-</div>
-
+<!--  end of websocket support & kinect status -->
+</td>
+<td>
+<!--  graph & scripts container -->
 <div id="contentpos" class="EXLCustomLayoutContainer centring">
 <div id="leftcol" class="EXLCustomLayoutContainer ">
   <div id="exlidFacetTile" class="EXLCustomLayoutTile EXLFacetTile">
@@ -98,6 +110,9 @@
 
 <script type="text/javascript" src="ebookshelf.js"></script>
 
-
+<!--  end of graph & scripts container -->
+</td>
+</tr>
+</table>
 </body>
 </html>

@@ -23,7 +23,7 @@ img { border: none; }
 
 
 #page { position: relative; min-height:100%; width: 100%;  }
-.centring { position: absolute; width: calc(100% - 400px); height: 100%; margin: -500px 0 0 401px; }
+.centring { width: calc(100% - 400px); height: 100%;}
 /*.centring { position: relative; width: 900px; height: 100%; margin: 0 0 0 30%; }*/
 #header { position: relative; width: 100%; height: 300px; background: url(../images/headbg.png) repeat-x 0 -1px; padding: 0 900px 0 0; }
 #navbarbg { position: absolute; top: 30px; left: 0; width: 100%; height: 70px; background: url(../images/navbarbg.png) repeat-x 0 0;}
@@ -765,6 +765,8 @@ a.avglsem { background: none; padding: 0; margin: 0; }
 #ns-avgl-facetgraph-infovis-canvaswidget {
   /*margin-left : -40px;*/
   border-style: dotted;
+  width: 100%;
+  height: 100%;
 }
 
 #ns-avgl-facetgraph-infovis-bkcanvas {
