@@ -3,4 +3,15 @@
   <welcome-file-list>
     <welcome-file>main.jsp</welcome-file>
   </welcome-file-list>
-</web-app> 
+  
+  <servlet>
+    <servlet-name>DataServlet</servlet-name>
+    <servlet-class>DataServlet</servlet-class>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>DataServlet</servlet-name>
+    <url-pattern>/DataServlet</url-pattern>
+</servlet-mapping>
+
+</web-app>

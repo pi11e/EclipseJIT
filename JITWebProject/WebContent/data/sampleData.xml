@@ -1,0 +1,256 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<root>
+	<obj xmlns:DIA = "http://tud.digitalediathek.de" xmlns:edp = "http://www.stegmannsystems.com/2009/edp" xmlns:edpm = "http://www.stegmannsystems.com/2009/edp-meta" edp:updated = "2011-07-06T19:53:30Z" edp:updatedBy = "admin" lvl = "1" edp:eddVersion = "1.0" edp:created = "2011-07-06T19:53:30Z" edp:createdBy = "admin" did = "1948858">
+        <a5000>32011771</a5000>
+        <a8450 lvl = "2" did = "1948859">
+            Negativ
+            <a8470>http://fotothek.slub-dresden.de/fotos/df/hauptkatalog/0103000/df_hauptkatalog_0103208.jpg</a8470>
+            <a8460>Deutsche Fotothek</a8460>
+            <a8555>mi10241c01</a8555>
+        </a8450>
+        <aob28>
+            Verwalter
+            <a2910>Kühl, Heinrich</a2910>
+            <a2864>Dresden</a2864>
+            <a2890>Handel</a2890>
+            <a280a edp:augmented = "no:reference">Deutschland</a280a>
+            <a280b edp:augmented = "no:reference">Sachsen</a280b>
+            <a280c edp:augmented = "no:reference">Dresden</a280c>
+            <a280d edp:augmented = "no:reference">Dresden</a280d>
+            <a280h edp:augmented = "no:reference">0.0</a280h>
+            <a280i edp:augmented = "no:reference">Dresden, Deutschland</a280i>
+            <a280j edp:augmented = "no:reference">9</a280j>
+            <a280k edp:augmented = "no:reference">DE</a280k>
+            <a280o edp:augmented = "no:reference">51.165691 10.451526 1</a280o>
+            <a280p edp:augmented = "no:reference">49.2898219 10.6601819 2</a280p>
+            <a280q edp:augmented = "no:reference">51.0509912 13.7336335 3</a280q>
+            <a280r edp:augmented = "no:reference">51.0509912 13.7336335 4</a280r>
+            <a280s edp:augmented = "no:reference">51.0509912 13.7336335 5</a280s>
+            <a280t edp:augmented = "no:reference">51.0509912 13.7336335 6</a280t>
+            <a280u edp:augmented = "no:reference">51.0509912 13.7336335 7</a280u>
+        </aob28>
+        <aob30>
+            Herstellung
+            <a3100>Hofer, Karl &lt;1878&gt;</a3100>
+            <a3000 edp:augmented = "kue::70058452">70058452</a3000>
+        </aob30>
+        <a5200>Fahnenträger</a5200>
+        <a520a>Ortskatalog zur Kunst und Architektur | D | Dresden | Private Sammlungen und Kunsthandel, alph. | K�hl -</a520a>
+        <a5064>
+            1913
+            <a5071 edp:augmented = "no:reference">1913</a5071>
+            <a5077 edp:augmented = "no:reference">1913</a5077>
+        </a5064>
+        <a5220>Malerei</a5220>
+        <a5230>Bild</a5230>
+        <a55df>Portfolio-Dresden-1924-Kunstleben</a55df>
+        <a5260>Öl</a5260>
+        <aob00>
+            Orts-Systematik-Nr.
+            <a0000 edp:augmented = "the::70802626">70802626</a0000>
+            <a55b1 edp:augmented = "the::70802626">Ortskatalog zur Kunst und Architektur</a55b1>
+            <a55b2 edp:augmented = "the::70802626">D</a55b2>
+            <a55b3 edp:augmented = "the::70802626">Dresden</a55b3>
+            <a55b4 edp:augmented = "the::70802626">Private Sammlungen und Kunsthandel, alph.</a55b4>
+            <a55b5 edp:augmented = "the::70802626">Kühl -</a55b5>
+        </aob00>
+        <a99d1>Fotos</a99d1>
+        <a99d2>Ortskatalog zur Kunst und Architektur</a99d2>
+        <a9902>Deutsche Fotothek</a9902>
+    </obj>
+    <obj xmlns:DIA = "http://tud.digitalediathek.de" xmlns:edp = "http://www.stegmannsystems.com/2009/edp" xmlns:edpm = "http://www.stegmannsystems.com/2009/edp-meta" edp:updated = "2011-07-06T19:53:30Z" edp:updatedBy = "admin" lvl = "1" edp:eddVersion = "1.0" edp:created = "2011-07-06T19:53:30Z" edp:createdBy = "admin" did = "1948998">
+        <a5000>80027631</a5000>
+        <a8450 lvl = "2" did = "1948999">
+            Negativ
+            <a8470>http://fotothek.slub-dresden.de/fotos/df/hauptkatalog/0190000/df_hauptkatalog_0190087.jpg</a8470>
+            <a8490>W�rker, Martin</a8490>
+            <a8494>
+                1977
+                <a8494a edp:augmented = "no:reference">1977</a8494a>
+                <a8494e edp:augmented = "no:reference">1977</a8494e>
+            </a8494>
+            <a8481>quer</a8481>
+            <a8480>13/18 cm</a8480>
+            <a8487>Kunststoff</a8487>
+            <a8482>schwarzwei�</a8482>
+            <a8497>Eigenproduktion</a8497>
+            <a8512>99  RETRO-ERFASSUNG</a8512>
+            <a8579>SLUB</a8579>
+            <a8478>Originalnegativ</a8478>
+            <a8475>190087</a8475>
+            <a8511>Kunst</a8511>
+        </a8450>
+        <aob30>
+            Herstellung
+            <a3100>Klotz, Siegfried</a3100>
+            <a3475>Maler</a3475>
+            <a3496>1976/1977</a3496>
+            <a3000 edp:augmented = "kue::90013500">90013500</a3000>
+        </aob30>
+        <a5200>Blick auf die Elbe</a5200>
+        <a5108>
+            Dresden
+            <a511a edp:augmented = "no:reference">Deutschland</a511a>
+            <a511b edp:augmented = "no:reference">Sachsen</a511b>
+            <a511c edp:augmented = "no:reference">Dresden</a511c>
+            <a511d edp:augmented = "no:reference">Dresden</a511d>
+            <a511h edp:augmented = "no:reference">0.0</a511h>
+            <a511i edp:augmented = "no:reference">Dresden, Deutschland</a511i>
+            <a511j edp:augmented = "no:reference">9</a511j>
+            <a511k edp:augmented = "no:reference">DE</a511k>
+            <a511o edp:augmented = "no:reference">51.165691 10.451526 1</a511o>
+            <a511p edp:augmented = "no:reference">49.2898219 10.6601819 2</a511p>
+            <a511q edp:augmented = "no:reference">51.0509912 13.7336335 3</a511q>
+            <a511r edp:augmented = "no:reference">51.0509912 13.7336335 4</a511r>
+            <a511s edp:augmented = "no:reference">51.0509912 13.7336335 5</a511s>
+            <a511t edp:augmented = "no:reference">51.0509912 13.7336335 6</a511t>
+            <a511u edp:augmented = "no:reference">51.0509912 13.7336335 7</a511u>
+        </a5108>
+        <a5064>
+            1976/1977
+            <a5071 edp:augmented = "no:reference">1976</a5071>
+            <a5077 edp:augmented = "no:reference">1977</a5077>
+        </a5064>
+        <a5230>Foto</a5230>
+        <a55df>Portfolio-Klotz-Erlebniswelt</a55df>
+        <a55df>Portfolio-Klotz-Landschaften</a55df>
+        <a55df>Dresden</a55df>
+        <a5260>�l/Hartfaserplatte; 90 x 150 cm</a5260>
+        <a7795>VIII. Kunstausstellung der DDR, 1977/78</a7795>
+        <a8350>VIII. Kunstausstellung der DDR. 1977/78, Kat. S. 135</a8350>
+        <a599a>
+            Zusatzinformation
+            <a599e>Eigentum des K�nstlers</a599e>
+        </a599a>
+        <aob00>
+            Systematik-Nr.
+            <a0000 edp:augmented = "the::80001931">80001931</a0000>
+            <a55b1 edp:augmented = "the::80001931">Weitere Kataloge</a55b1>
+            <a55b2 edp:augmented = "the::80001931">Kunstgeschichte</a55b2>
+            <a55b3 edp:augmented = "the::80001931">Kunst des 20. Jahrhunderts</a55b3>
+            <a55b4 edp:augmented = "the::80001931">Kunst des 20. Jahrhunderts in Deutschland, �sterreich, Schweiz</a55b4>
+            <a55b5 edp:augmented = "the::80001931">Plastik, Installationen, Performances</a55b5>
+        </aob00>
+        <aob00>
+            Systematik-Nr.
+            <a0000 edp:augmented = "the::80003057">80003057</a0000>
+            <a55b1 edp:augmented = "the::80003057">Weitere Kataloge</a55b1>
+            <a55b2 edp:augmented = "the::80003057">Ortskatalog systematisch</a55b2>
+            <a55b3 edp:augmented = "the::80003057">Verschiedenes</a55b3>
+            <a55b4 edp:augmented = "the::80003057">Verkehr</a55b4>
+            <a55b5 edp:augmented = "the::80003057">Schienenverkehr</a55b5>
+        </aob00>
+        <aob00>
+            Orts-Systematik-Nr.
+            <a0000 edp:augmented = "the::70802830">70802830</a0000>
+            <a55b1 edp:augmented = "the::70802830">Ortskatalog zur Kunst und Architektur</a55b1>
+            <a55b2 edp:augmented = "the::70802830">D</a55b2>
+            <a55b3 edp:augmented = "the::70802830">Dresden</a55b3>
+            <a55b4 edp:augmented = "the::70802830">Ausstellungen, chron.</a55b4>
+            <a55b5 edp:augmented = "the::70802830">1977/8. Kunstausstellung der DDR</a55b5>
+            <a55b6 edp:augmented = "the::70802830">Malerei</a55b6>
+            <a55b7 edp:augmented = "the::70802830">K�nstler</a55b7>
+            <a55b8 edp:augmented = "the::70802830">K - Q</a55b8>
+        </aob00>
+        <a99d1>Fotos</a99d1>
+        <a9902>Deutsche Fotothek (Bidok)</a9902>
+        <a9904>Heinrich, Gabriele</a9904>
+        <a9903>SLUB</a9903>
+        <a2000>157</a2000>
+    </obj>
+    <obj xmlns:DIA = "http://tud.digitalediathek.de" xmlns:edp = "http://www.stegmannsystems.com/2009/edp" xmlns:edpm = "http://www.stegmannsystems.com/2009/edp-meta" edp:updated = "2011-07-06T19:53:30Z" edp:updatedBy = "admin" lvl = "1" edp:eddVersion = "1.0" edp:created = "2011-07-06T19:53:30Z" edp:createdBy = "admin" did = "1949000">
+        <a5000>80027621</a5000>
+        <a8450 lvl = "2" did = "1949001">
+            Diapositiv
+            <a8470>http://fotothek.slub-dresden.de/fotos/df/ld/0003000/df_ld_0003613.jpg</a8470>
+            <a8490>Rous, Andr�</a8490>
+            <a8494>
+                1989
+                <a8494a edp:augmented = "no:reference">1989</a8494a>
+                <a8494e edp:augmented = "no:reference">1989</a8494e>
+            </a8494>
+            <a8481>quer</a8481>
+            <a8480>13/18 cm</a8480>
+            <a8487>Kunststoff</a8487>
+            <a8482>color</a8482>
+            <a8497>Eigenproduktion</a8497>
+            <a8512>99  RETRO-ERFASSUNG</a8512>
+            <a8579>PTHIELE</a8579>
+            <a8475>Leihdia 3613</a8475>
+            <a8511>Kunst</a8511>
+        </a8450>
+        <a99cr>Deutsche Fotothek</a99cr>
+        <aob30>
+            Herstellung
+            <a3100>Klotz, Siegfried</a3100>
+            <a3475>Maler</a3475>
+            <a3496>1988/1989</a3496>
+            <a3000 edp:augmented = "kue::90013500">90013500</a3000>
+        </aob30>
+        <a5200>Phantasus �ber Dresden III</a5200>
+        <a5108>
+            Dresden
+            <a511a edp:augmented = "no:reference">Deutschland</a511a>
+            <a511b edp:augmented = "no:reference">Sachsen</a511b>
+            <a511c edp:augmented = "no:reference">Dresden</a511c>
+            <a511d edp:augmented = "no:reference">Dresden</a511d>
+            <a511h edp:augmented = "no:reference">0.0</a511h>
+            <a511i edp:augmented = "no:reference">Dresden, Deutschland</a511i>
+            <a511j edp:augmented = "no:reference">9</a511j>
+            <a511k edp:augmented = "no:reference">DE</a511k>
+            <a511o edp:augmented = "no:reference">51.165691 10.451526 1</a511o>
+            <a511p edp:augmented = "no:reference">49.2898219 10.6601819 2</a511p>
+            <a511q edp:augmented = "no:reference">51.0509912 13.7336335 3</a511q>
+            <a511r edp:augmented = "no:reference">51.0509912 13.7336335 4</a511r>
+            <a511s edp:augmented = "no:reference">51.0509912 13.7336335 5</a511s>
+            <a511t edp:augmented = "no:reference">51.0509912 13.7336335 6</a511t>
+            <a511u edp:augmented = "no:reference">51.0509912 13.7336335 7</a511u>
+        </a5108>
+        <a5064>
+            1988/1989
+            <a5071 edp:augmented = "no:reference">1988</a5071>
+            <a5077 edp:augmented = "no:reference">1989</a5077>
+        </a5064>
+        <a5220>Malerei</a5220>
+        <a5230>Bild</a5230>
+        <a55df>Portfolio-Klotz-Erlebniswelt</a55df>
+        <a55df>Dresden</a55df>
+        <a5260>�l/Hartfaserplatte; 90 x 120 cm</a5260>
+        <a7795>Siegfied Klotz, 1989</a7795>
+        <a8350>Siegfried Klotz. 1989, Kat. Nr. 51</a8350>
+        <a599a>
+            Zusatzinformation
+            <a599e>Eigentum des K�nstlers</a599e>
+        </a599a>
+        <aob00>
+            Schlagwort-Nr.
+            <a0000 edp:augmented = "the::81038170">81038170</a0000>
+            <a55b1 edp:augmented = "the::81038170">Weitere Kataloge</a55b1>
+            <a55b2 edp:augmented = "the::81038170">Schlagwort-Katalog</a55b2>
+            <a55b3 edp:augmented = "the::81038170">Phantasus</a55b3>
+        </aob00>
+        <aob00>
+            Systematik-Nr.
+            <a0000 edp:augmented = "the::80001931">80001931</a0000>
+            <a55b1 edp:augmented = "the::80001931">Weitere Kataloge</a55b1>
+            <a55b2 edp:augmented = "the::80001931">Kunstgeschichte</a55b2>
+            <a55b3 edp:augmented = "the::80001931">Kunst des 20. Jahrhunderts</a55b3>
+            <a55b4 edp:augmented = "the::80001931">Kunst des 20. Jahrhunderts in Deutschland, �sterreich, Schweiz</a55b4>
+            <a55b5 edp:augmented = "the::80001931">Plastik, Installationen, Performances</a55b5>
+        </aob00>
+        <aob00>
+            Systematik-Nr.
+            <a0000 edp:augmented = "the::80003057">80003057</a0000>
+            <a55b1 edp:augmented = "the::80003057">Weitere Kataloge</a55b1>
+            <a55b2 edp:augmented = "the::80003057">Ortskatalog systematisch</a55b2>
+            <a55b3 edp:augmented = "the::80003057">Verschiedenes</a55b3>
+            <a55b4 edp:augmented = "the::80003057">Verkehr</a55b4>
+            <a55b5 edp:augmented = "the::80003057">Schienenverkehr</a55b5>
+        </aob00>
+        <a99d1>Fotos</a99d1>
+        <a9902>Deutsche Fotothek (Bidok)</a9902>
+        <a9904>Heinrich, Gabriele</a9904>
+        <a9903>SLUB</a9903>
+        <a2000>157</a2000>
+    </obj>
+</root>

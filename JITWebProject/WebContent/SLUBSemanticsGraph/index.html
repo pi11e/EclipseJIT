@@ -16,7 +16,6 @@
 </head>
 <body>
 
-
 	<!-- entfernt: 
 		div id="searchbar"
 		div id="rightcol"
@@ -42,14 +41,13 @@
 	<button onclick="gesture(3)">center highlighted node</button>
 	<button onclick="gesture(4)">go back 1 level</button>
 	</p>
+	
 	<BR>&nbsp;<BR>
 	<button onclick="gesture(5)">home</button>
-	<script type="text/javascript">
-		var gesture = function(gestureCode)
-		{
-			window.kinectComponent.kinectCallbackHandler(gestureCode);
-		}
-	</script>
+	<BR>&nbsp;<BR>
+	<button onclick="promptQueryAndExecute()">execute query</button>
+	
+
 	</div>
 </div>
 <!--  end of websocket support & kinect status -->
@@ -109,6 +107,31 @@
 </script>
 
 <script type="text/javascript" src="ebookshelf.js"></script>
+
+<!--  some custom scripts -->
+<script type="text/javascript">
+	var gesture = function(gestureCode)
+	{
+		window.kinectComponent.kinectCallbackHandler(gestureCode);
+	}
+	var queryDB = function(queryString)
+	{
+		$.get(
+			    "http://localhost:8080/JITWebProject/DataServlet",
+			    {query : queryString},
+			    function(data) 
+			    {
+			    	// data contains the server response
+			       alert(data);
+			    }
+			);
+	}
+	var promptQueryAndExecute = function()
+	{
+		var queryString = prompt("Enter XQuery:");
+		queryDB(queryString);
+	}
+</script>
 
 <!--  end of graph & scripts container -->
 </td>
