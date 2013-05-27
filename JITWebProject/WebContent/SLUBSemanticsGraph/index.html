@@ -106,7 +106,7 @@
   });
 </script>
 
-<script type="text/javascript" src="ebookshelf.js"></script>
+
 
 <!--  some custom scripts -->
 <script type="text/javascript">
@@ -114,24 +114,10 @@
 	{
 		window.kinectComponent.kinectCallbackHandler(gestureCode);
 	}
-	var queryDB = function(queryString)
-	{
-		$.get(
-			    "http://localhost:8080/JITWebProject/DataServlet",
-			    {query : queryString},
-			    function(data) 
-			    {
-			    	// data contains the server response
-			       alert(data);
-			    }
-			);
-	}
-	var promptQueryAndExecute = function()
-	{
-		var queryString = prompt("Enter XQuery:");
-		queryDB(queryString);
-	}
 </script>
+
+<script type="text/javascript" src="ebookshelf.js"></script>
+
 
 <!--  end of graph & scripts container -->
 </td>

@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.sun.jmx.snmp.Timestamp;
+
 import de.tudresden.mg.ebookshelf.data.BaseXController;
 
 /**
@@ -44,7 +46,7 @@ public class DataServlet extends HttpServlet {
 		// allow only XQUERY:
 		if(query != null && query.startsWith("XQUERY"))
 		{
-			System.out.println("executing " + query);
+			System.out.println(new Timestamp().getDate() +" DataServlet | executing " + query);
 			this.dbController.executeQuery(query, true, out);	
 		}
 		else
@@ -66,7 +68,7 @@ public class DataServlet extends HttpServlet {
 	private void initializeDB()
 	{
 		// important flag: use sample data (MUCH smaller dataset) or not
-		boolean useSampleData = true;
+		boolean useSampleData = false;
 		
 		String pathToXMLData = useSampleData ? this.getServletContext().getRealPath("data/sampleData.xml") : this.getServletContext().getRealPath("data/data.xml");
 		

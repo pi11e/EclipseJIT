@@ -15,7 +15,7 @@
 // NOTE: RGraph rendering function at jit.custom.js line 8924
 
 // this.kinectComponent === window.kinectComponent
-this.kinectComponent = 
+window.kinectComponent = 
 {
 		// reference to global context; this === window (usually)
 		global: this, 
@@ -123,6 +123,11 @@ this.kinectComponent =
 		toggleNodeDetails : function(nodeId)
 		{
 			
+		},
+		
+		getNodeById : function(nodeId)
+		{
+			return this.rgraph.graph.getNode(nodeId);
 		},
 		
 		

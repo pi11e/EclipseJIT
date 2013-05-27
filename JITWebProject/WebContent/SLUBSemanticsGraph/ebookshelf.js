@@ -56,12 +56,61 @@ setTimeout(function()
 		}
 	);
 	
+	
+	createGraphLevelFromData();
+	
+	
     console.log('after');
 },500);
 
 
+var promptQueryAndExecute = function()
+{
+	var queryString = prompt("Enter XQuery:");
+	queryDB(queryString);
+};
+
+var queryDB = function(queryString, callback)
+{
+	$.get(
+		    "http://localhost:8080/JITWebProject/DataServlet",
+		    {query : queryString},
+		    callback
+		);
+};
 
 
-// To Do:
-// expose above functionality
-// -> e.g. control node selection (onClick method) programmatically
+var getDistinctValuesForTag = function(tag, callback)
+{
+	//e.g. for $x in distinct-values(//obj/a99d3) return ($x, '&#xa;')
+	var delimiter = ";";
+	var query = "XQUERY for $x in distinct-values(//obj/" + tag + ") return ($x, '" + delimiter + "')";
+	
+	
+	queryDB(query, callback);
+};
+
+var createGraphLevelFromData = function()
+{
+	getDistinctValuesForTag("a99d3", 
+	function(data) 
+    {
+    	// data contains the server response
+       var nodeNames = data.split(";");
+       console.log(nodeNames);
+       
+       // TODO: create new json graph data with given names
+       
+       
+       // Doesnt work!
+//       jsonData = [];
+//       for(var i = 0; i < nodeNames.length; i++)
+//	   {
+//    	   jsonData[i] = {"id":Math.ceil(Math.random()*1000000).toString(),"name":nodeNames[i],"adjacencies":["0"]};
+//	   }
+//       
+//       console.log(jsonData);
+//       new avgl.Graph(jsonData);
+    });
+};
+
