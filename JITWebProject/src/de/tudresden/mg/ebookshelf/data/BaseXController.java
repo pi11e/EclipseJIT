@@ -2,6 +2,7 @@ package de.tudresden.mg.ebookshelf.data;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 import org.basex.BaseXServer;
 import org.basex.core.cmd.CreateDB;
@@ -43,9 +44,9 @@ public class BaseXController
 	 * @param XQuery
 	 * @throws IOException 
 	 */
-	public void executeQuery(String XQuery, boolean literally) throws IOException
+	public void executeQuery(String XQuery) throws IOException
 	{
-		this.executeQuery(XQuery, literally, System.out);
+		this.executeQuery(XQuery, System.out);
 	}
 	
 	/**
@@ -53,21 +54,13 @@ public class BaseXController
 	 * @param XQuery
 	 * @throws IOException 
 	 */
-	public void executeQuery(String XQuery, boolean literally, OutputStream out) throws IOException
+	public void executeQuery(String XQuery, OutputStream out) throws IOException
 	{
 		ClientSession session = getSession();
 		session.execute("OPEN input");
 		session.setOutputStream(out);
-		
-		if(literally)
-		{
-			session.execute(XQuery);
-		}
-		else
-		{
-			session.execute("xquery doc('input')" + XQuery);
-		}
-		
+				
+		session.execute(XQuery);
 		
 		session.close();
 	}

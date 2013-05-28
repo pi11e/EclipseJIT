@@ -57,7 +57,7 @@ setTimeout(function()
 	);
 	
 	
-	createGraphLevelFromData();
+	
 	
 	
     console.log('after');
@@ -67,7 +67,7 @@ setTimeout(function()
 var promptQueryAndExecute = function()
 {
 	var queryString = prompt("Enter XQuery:");
-	queryDB(queryString);
+	queryDB(queryString, function(data){alert(data);});
 };
 
 var queryDB = function(queryString, callback)
@@ -97,20 +97,72 @@ var createGraphLevelFromData = function()
     {
     	// data contains the server response
        var nodeNames = data.split(";");
-       console.log(nodeNames);
+       //console.log(nodeNames);
+       
+       var rgraph = window.kinectComponent.rgraph;
        
        // TODO: create new json graph data with given names
        
+       // 1. create new node for each valid name in nodeNames
+       //		node = {id:"", name:"", data:{...}}
+       //		data has additional values 
+       /*highlightColor: "#F90"
+       isHighlighted: false
+       regularColor: "#278"
+       */
        
-       // Doesnt work!
-//       jsonData = [];
-//       for(var i = 0; i < nodeNames.length; i++)
-//	   {
-//    	   jsonData[i] = {"id":Math.ceil(Math.random()*1000000).toString(),"name":nodeNames[i],"adjacencies":["0"]};
-//	   }
-//       
-//       console.log(jsonData);
-//       new avgl.Graph(jsonData);
-    });
+       for(var i = 0; i < nodeNames.length; i++)
+	   {
+    	   var nodeName = nodeNames[i];
+    	   
+    	   if(nodeName != undefined && nodeName !== "")
+		   {
+    		   
+    		   var newNode = {
+    				   id:		i+10,//Math.ceil(Math.random()*100000).toString(),
+    				   name:	jQuery.trim(nodeName),
+    				   data:	{
+    					   			highlightColor: "#F90",
+    					   			isHighlighted: false,
+    					   			regularColor: "#278",
+    					   			cnt: undefined
+    					   		}
+    				
+    		   }; // end of newNode
+    		   
+    		   console.log("name result = " + newNode.name);
+  				var query = "XQUERY count(//obj[a99d3='"+ newNode.name +"'])";
+   				//console.log("trying query = " + query);
+   				queryDB(query, function(data)
+   				{
+   					console.log("server response to " + query + " = " + data);
+   					// get correct node
+   					
+   				});
+    		   
+    		   var rootNode = rgraph.graph.getNode(rgraph.root);
+    		   //console.log("created node " + newNode.name + " with id " + newNode.id);
+    		   rgraph.graph.addAdjacence(rootNode, newNode);
+    		   
+    		   
+    		   
+		   }
+	   }
+       
+
+
+   	
+       
+       // 3. reload graph 
+       rgraph.refresh();
+       rgraph.plot();
+       
+       
+       
+    }); // end of getDistinctValuesForTag
+	
+	// add book count for each node?
+	
+	
 };
 
