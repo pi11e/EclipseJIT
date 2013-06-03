@@ -211,6 +211,11 @@ window.kinectComponent =
 				
 				return jitDeclared && isJitGraphNode && nodeInGraph;
 			}
+		},
+		
+		showLabels : function(show)
+		{
+			this.rgraph.labels.hideLabels(!show);
 		}
 }; 
 

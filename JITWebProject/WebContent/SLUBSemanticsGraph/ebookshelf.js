@@ -170,7 +170,12 @@ var createFilterLevel = function (rootNode)
 	}
 };
 
-var createSublevelForNode = function(parentName)
+var createSublevelForNode = function()
+{
+	
+}
+
+var createSublevelForNode2 = function(parentName)
 {
 	console.log("Creating sublevel for node " + parentName);
 	
@@ -248,9 +253,11 @@ var addNodesWithNamesToRoot = function(nodeNames, rootNode)
 				
 		   }; // end of newNode
 		
+		addChildCountToNode(newNode);
+		
 	   rgraph.graph.addAdjacence(rootNode, newNode);
 	   //rgraph.refresh();
-	   addChildCountToNode(newNode);
+	   
 		   
 	} // end of nodeNames for-loop
 	
