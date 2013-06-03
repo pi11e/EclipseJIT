@@ -8938,7 +8938,7 @@ var globals = this;
           {
         	  if(node.data.highlightColor !== undefined && node.data.isHighlighted)
         	  {
-        		  // if node is highlighted, use corresponding color
+        		  // if node should be highlighted, use corresponding color
         		  ctx.fillStyle = ctx.strokeStyle = node.data.highlightColor;
         	  }
         	  else
@@ -9111,11 +9111,13 @@ var globals = this;
             ctx.fillStyle = ctx.strokeStyle = SLUB_COLORS.act;
             ctx.lineWidth = 2;
             ctx.save();
-          } else if (histStyle == 1) {
-            //mark walked lines red -- yeah, I walk the line \o/ *sing*
-            ctx = canvas.getCtx();
-            ctx.lineWidth = 3;
-            ctx.save();
+          } else if (histStyle == 1) 
+          {
+            // this part marks visited lines a broad grey stroke, indicating they are present in the history
+        	// and have been visited in the past, but are not the "last" selected node (which is painted red, see above case)
+//            ctx = canvas.getCtx();
+//            ctx.lineWidth = 3;
+//            ctx.save();
           }
 
           /* Change 12 End */
