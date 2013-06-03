@@ -165,15 +165,73 @@ var createFilterLevel = function (rootNode)
 			
 			// 2.
 			addNodesWithNamesToRoot(tempData, rootNode);
-
+			
 		});
 	}
+	
+	createSublevelForNode(window.kinectComponent.getNodeByName("Grafik"));
 };
 
-var createSublevelForNode = function()
+var createSublevelForNode = function(node)
 {
+	// create a sublevel for a filter child node, e.g.
+	// filter: "nach Gattung", child: "Fotografie" -> that's what we'll be getting here.
 	
-}
+	// 1. find the tag the parent is based on (in the example "nach Gattung", this tag will be a5220)
+	if(!node.data.parentName)
+	{
+		return;
+	}
+	
+	var nodeName = node.name;
+	var nodeTag = nodeTagMap[node.data.parentName];
+	
+	
+	
+	if(!nodeTag || !nodeName)
+	{
+		return;
+	}
+	
+	var temp = nodeTag + "='" + nodeName + "'"; // e.g. a5220='Fotografie'
+	
+	// now construct a query that returns all objects that satisfy the temp condition
+	var query = "XQUERY for $x in //obj["+ temp + "] return $x//a8470//text()";
+	var callback = function(data)
+	{
+
+			// create new node
+			var newNode = {
+					   id:		Math.ceil(Math.random()*100000).toString(),
+					   name:	"",
+					   data:	{
+						   			highlightColor: "#F90",
+						   			isHighlighted: false,
+						   			regularColor: "#278",
+						   			parentName:	nodeName,
+						   			cnt: undefined
+						   		}
+					
+			   }; // end of newNode
+			
+			
+			
+		   rgraph.graph.addAdjacence(node, newNode);
+		
+		
+		
+	};
+	
+	if(kinectComponent.getNodeByName(parentName).data.cnt < 50)
+	{
+		queryDB(query, callback, false);
+	}
+	
+	
+	// 3. reload graph 
+    rgraph.refresh();
+    rgraph.plot();
+};
 
 var createSublevelForNode2 = function(parentName)
 {
@@ -342,7 +400,7 @@ var demoCallback = function(data)
 //	   
 //   });
    
-   createSublevelForNode("Möbelarchiv Weimer");
+   createSublevelForNode2("Möbelarchiv Weimer");
    
    
    // 3. reload graph 
