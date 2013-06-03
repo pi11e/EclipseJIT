@@ -32,20 +32,17 @@ window.kinectComponent =
 //				(visually emphasizing one node, allowing clear distinction from other nodes)
 		setHighlightedNode : function(node)
 		{
-			// TODO: check with isNode(node)
+
 			if(!this.isNode(node))
 				return;
 			
-			// only allow highlighting of currently visible nodes, i.e.
+			// only allow highlighting of  visible nodes, i.e.
 			// the current root/centered node's immediate successors
-			/*
-			var rootId = this.rgraph.root;
-			var rootNode = this.rgraph.graph.getNode(this.rgraph.root);
-			
-			var level = 1; // default 0
-			// Collects all subnodes for a specified node.  The level parameter filters nodes having relative depth of level from the root node.
-			var visibleSubNodes = this.rgraph.graph.getSubnodes(rootNode, level);
-			*/
+			// see jit.custom render method, e.g.
+			// /* Change 14 Begin insert */ in jit.custom.js
+
+			if(node._depth > 1)
+				return;
 			
 			// if given node isn't already highlighted,
 			if(this.highlightedNode !== node) // note: this.highlightedNode may be undefined at this point if no previous highlighting has happened
@@ -65,6 +62,7 @@ window.kinectComponent =
 				// re-draw graph
 				this.rgraph.plot(); 
 
+				updateSelectionLabelWithText(node.name);
 			}
 		},
 		/**
@@ -128,6 +126,21 @@ window.kinectComponent =
 		getNodeById : function(nodeId)
 		{
 			return this.rgraph.graph.getNode(nodeId);
+		},
+		
+		getNodeByName : function(nodeName)
+		{
+			var nodeFound = null;
+			this.rgraph.graph.eachNode(function(node)
+					{
+						if(node.name === nodeName)
+						{
+							nodeFound = node;
+							return;
+						}
+					});
+			
+			return nodeFound;
 		},
 		
 		
