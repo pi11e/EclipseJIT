@@ -12,6 +12,7 @@
         type="image/vnd.microsoft.icon"/>
   <link rel="icon" href="images/favicon.png" type="image/png"/>
   <link rel="stylesheet" type="text/css" href="basic.css"/>
+  <link rel="stylesheet" type="text/css" href="../lightbox/css/slimbox2.css"  />
   <title>DEMO</title>
 </head>
 <body>
@@ -20,6 +21,7 @@
 		div id="searchbar"
 		div id="rightcol"
 		-->
+		
 <table role="presentation">
 <tr>
 <td>
@@ -49,8 +51,8 @@
 	<button onclick="gesture(5)">home</button>
 	<BR>&nbsp;<BR>
 	<button onclick="promptQueryAndExecute()">execute query</button>
-	<button onclick="createFirstGraphLevel()">start the show</button>
-
+	<button onclick="createFirstGraphLevel()">start the show / disable child count:</button>
+	<select id="quickDrawList" onchange="toggleQuickDraw()"><option>false</option><option>true</option></select>
 	</div>
 </div>
 <!--  end of websocket support & kinect status -->
@@ -93,6 +95,12 @@
 <script type="text/javascript" src="jit.custom.js"></script>
 <script type="text/javascript" src="avgl.js"></script>
 <script type="text/javascript" src="graph.js"></script>
+
+<!-- Lightbox 2.51 for image display, see http://lokeshdhakar.com/projects/lightbox2/ -->
+<script type="text/javascript" src="../lightbox/js/slimbox2.js"></script>
+
+
+
 <script type="text/javascript">
   jQuery(document).ready(function() 
   {
@@ -116,6 +124,19 @@
 	var gesture = function(gestureCode)
 	{
 		window.kinectComponent.kinectCallbackHandler(gestureCode);
+	}
+	var toggleQuickDraw = function()
+	{
+		var quickDrawList = document.getElementById("quickDrawList");
+		optionText = quickDrawList.options[quickDrawList.selectedIndex].text;
+		if(optionText === "true")
+		{
+			window.quickDraw = true;
+		}
+		else
+		{
+			window.quickDraw = false;
+		}
 	}
 </script>
 

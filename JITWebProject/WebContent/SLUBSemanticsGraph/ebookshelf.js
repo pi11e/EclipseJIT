@@ -177,6 +177,9 @@ var createSublevelForNode = function(node)
 	// create a sublevel for a filter child node, e.g.
 	// filter: "nach Gattung", child: "Fotografie" -> that's what we'll be getting here.
 	
+	console.log("Creating sublevel for node " + node.name + " with parent " + node.data.parentName);
+	
+	
 	// 1. find the tag the parent is based on (in the example "nach Gattung", this tag will be a5220)
 	if(!node.data.parentName)
 	{
@@ -184,9 +187,10 @@ var createSublevelForNode = function(node)
 	}
 	
 	var nodeName = node.name;
-	var nodeTag = nodeTagMap[node.data.parentName];
+	var parentName = node.data.parentName;
+	var nodeTag = nodeTagMap[parentName];
 	
-	
+	var rgraph = window.kinectComponent.rgraph;
 	
 	if(!nodeTag || !nodeName)
 	{
@@ -196,34 +200,44 @@ var createSublevelForNode = function(node)
 	var temp = nodeTag + "='" + nodeName + "'"; // e.g. a5220='Fotografie'
 	
 	// now construct a query that returns all objects that satisfy the temp condition
-	var query = "XQUERY for $x in //obj["+ temp + "] return $x//a8470//text()";
+	var query = "XQUERY for $x in //obj["+ temp + "] return ($x//a8470//text(), ';')";
 	var callback = function(data)
 	{
-
-			// create new node
-			var newNode = {
-					   id:		Math.ceil(Math.random()*100000).toString(),
-					   name:	"",
-					   data:	{
-						   			highlightColor: "#F90",
-						   			isHighlighted: false,
-						   			regularColor: "#278",
-						   			parentName:	nodeName,
-						   			cnt: undefined
-						   		}
-					
-			   }; // end of newNode
-			
-			
-			
-		   rgraph.graph.addAdjacence(node, newNode);
+		// with this query, data contains a number of URLs, delimited by ;
+		tempData = data.split(';');
 		
-		
-		
+		for(var i = 0; i < tempData.length; i++)
+		{
+			var urlString = jQuery.trim(tempData[i]);
+			if(urlString && urlString !== "" && urlString.length > 1)
+			{
+				console.log("tempData with url strings = " + urlString);
+				
+				//var lightBoxHref = "<a href='" + urlString + "' rel='lightbox'/>";
+				
+				// create new node
+				var newNode = {
+						   id:		Math.ceil(Math.random()*100000).toString(),
+						   name:	"URL",
+						   data:	{
+							   			highlightColor: "#F90",
+							   			isHighlighted: false,
+							   			regularColor: "#278",
+							   			parentName:	nodeName,
+							   			cnt: undefined,
+							   			href: urlString
+							   		}	
+				   }; // end of newNode
+			    rgraph.graph.addAdjacence(node, newNode);
+			}
+			
+		}
+	
 	};
 	
-	if(kinectComponent.getNodeByName(parentName).data.cnt < 50)
+	if(kinectComponent.getNodeByName(nodeName).data.cnt < 50)
 	{
+		console.log("submitting query for sublevel: " + query);
 		queryDB(query, callback, false);
 	}
 	
@@ -251,9 +265,9 @@ var createSublevelForNode2 = function(parentName)
 	 * NOTE: 
 	 * There's a bothersome duality in values for the a55df tag, because its usage differs.
 	 * To demonstrate, here are some sample values:
-	 * "Faschismus Antisemitismus Pogrome Verbände SA" i.e. several theme-based tags, delimited by a space character
+	 * "Faschismus Antisemitismus Pogrome Verbï¿½nde SA" i.e. several theme-based tags, delimited by a space character
 	 * "Die Naturfreunde" i.e. one single semantic term not meant to be separated
-	 * " Eßzimmermöbel | Ausziehtische Portfolio-Möbeldesign-Eßzimmermöbel " i.e. a wild combination of both of the above cases PLUS a new delimiter-character "|"
+	 * " Eï¿½zimmermï¿½bel | Ausziehtische Portfolio-Mï¿½beldesign-Eï¿½zimmermï¿½bel " i.e. a wild combination of both of the above cases PLUS a new delimiter-character "|"
 	 */
 	
 	
@@ -278,7 +292,8 @@ var addNodesWithNamesToRoot = function(nodeNames, rootNode)
 {
 
 	nodeNames = removeDuplicatesFromArray(nodeNames);
-	var filter = ['Kunst', 'des', '20.', 'Jahrhunderts', 'gedeckte'/*, 'Tische'*/];
+	//var filter = ['Kunst', 'des', '20.', 'Jahrhunderts', 'gedeckte'/*, 'Tische'*/];
+	var filter = [];
 	
 	var rgraph = window.kinectComponent.rgraph;
 	
@@ -400,7 +415,7 @@ var demoCallback = function(data)
 //	   
 //   });
    
-   createSublevelForNode2("Möbelarchiv Weimer");
+   createSublevelForNode2("MÃ¶belarchiv Weimer");
    
    
    // 3. reload graph 
@@ -413,6 +428,9 @@ var demoCallback = function(data)
 
 var addChildCountToNode = function(node)
 {
+	if(window.quickDraw)
+		return;
+	
 	// get node name & the parent's tag
 	
 	// Explanation:
@@ -455,7 +473,7 @@ var addChildCountToNode = function(node)
 		var childAmount = tempData[0];
 		var nodeId = tempData[1];
 		
-		console.log("Adding subnode count " + childAmount + " to node " + node.name);
+		//console.log("Adding subnode count " + childAmount + " to node " + node.name);
 		
 		// what I want is this; watch out for correct type etc, child amount might be string, maybe should be trimmed first
 		node.data.cnt = parseInt(childAmount);

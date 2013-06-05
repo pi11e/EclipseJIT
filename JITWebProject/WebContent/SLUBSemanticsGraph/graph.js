@@ -50,6 +50,16 @@ avgl.Graph = function(data) {
       onClick: function(node) {
         node && self._onClick(node);
       },
+      onRightClick: function(node) {
+    	console.log("right click on node " + node.name + " with id " + node.id + " registered."); 
+    	if(node.data.href)
+		{
+    		var imageLink = node.data.href;
+    		console.log(imageLink);
+    		
+    		jQuery.slimbox(imageLink); //slimbox(url, [description, options])
+		}
+      },
       onMouseEnter: function(node) {
         node && (function() {
         	window.kinectComponent.setHighlightedNode(node);
