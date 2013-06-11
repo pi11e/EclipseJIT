@@ -53,6 +53,8 @@
 	<button onclick="promptQueryAndExecute()">execute query</button>
 	<button onclick="createFirstGraphLevel()">start the show / disable child count:</button>
 	<select id="quickDrawList" onchange="toggleQuickDraw()"><option>false</option><option>true</option></select>
+	<BR>&nbsp;<BR>
+	<button onclick="toggleLabels()">toggle labels</button>
 	</div>
 </div>
 <!--  end of websocket support & kinect status -->
@@ -137,6 +139,14 @@
 		{
 			window.quickDraw = false;
 		}
+	}
+	
+	var labelsHidden = false;
+	
+	var toggleLabels = function()
+	{
+		window.kinectComponent.showLabels(labelsHidden);
+		labelsHidden = !labelsHidden;		
 	}
 </script>
 

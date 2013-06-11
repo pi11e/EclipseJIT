@@ -8,6 +8,12 @@ var maximumNodes = 20;
 // used to map which node is based on which tag
 var nodeTagMap = {};
 
+// regular node color light torqoise
+var regularColor = "#278";
+// highlighted color: light orange
+var highlightedColor = "#F90";
+// node color for leaf nodes
+var leafNodeRegularColor = "#6495ED";
 
 console.log('before');
 setTimeout(function()
@@ -55,8 +61,8 @@ setTimeout(function()
 	this.kinectComponent.rgraph.graph.eachNode(function(node)
 		{
 			// perform this for all nodes in the graph
-			node.data.regularColor = "#278";
-			node.data.highlightColor = "#F90";
+			node.data.regularColor = regularColor;
+			node.data.highlightColor = highlightedColor;
 			node.data.isHighlighted = false;
 		}
 	);
@@ -201,6 +207,7 @@ var createSublevelForNode = function(node)
 	
 	// now construct a query that returns all objects that satisfy the temp condition
 	var query = "XQUERY for $x in //obj["+ temp + "] return ($x//a8470//text(), ';')";
+	// a8470 => URL 
 	var callback = function(data)
 	{
 		// with this query, data contains a number of URLs, delimited by ;
@@ -218,11 +225,11 @@ var createSublevelForNode = function(node)
 				// create new node
 				var newNode = {
 						   id:		Math.ceil(Math.random()*100000).toString(),
-						   name:	"URL",
+						   name:	"",
 						   data:	{
-							   			highlightColor: "#F90",
+							   			highlightColor: highlightedColor,
 							   			isHighlighted: false,
-							   			regularColor: "#278",
+							   			regularColor: leafNodeRegularColor,
 							   			parentName:	nodeName,
 							   			cnt: undefined,
 							   			href: urlString
@@ -317,9 +324,9 @@ var addNodesWithNamesToRoot = function(nodeNames, rootNode)
 				   id:		Math.ceil(Math.random()*100000).toString(),
 				   name:	nodeName,
 				   data:	{
-					   			highlightColor: "#F90",
+					   			highlightColor: highlightedColor,
 					   			isHighlighted: false,
-					   			regularColor: "#278",
+					   			regularColor: regularColor,
 					   			parentName:	rootNode.name,
 					   			cnt: undefined
 					   		}
@@ -366,9 +373,9 @@ var demoCallback = function(data)
 				   id:		i+10,//Math.ceil(Math.random()*100000).toString(),
 				   name:	nodeName,
 				   data:	{
-					   			highlightColor: "#F90",
+					   			highlightColor: highlightedColor,
 					   			isHighlighted: false,
-					   			regularColor: "#278",
+					   			regularColor: regularColor,
 					   			cnt: undefined
 					   		}
 				
