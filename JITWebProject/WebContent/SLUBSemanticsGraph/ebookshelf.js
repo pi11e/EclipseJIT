@@ -155,6 +155,15 @@ var createFilterLevel = function (rootNode)
 	var filterNames = ['nach Epoche', 'nach Sammlung', 'nach Gattung', 'nach Schlagwort', 'nach Katalog', 'nach Thema'];
 	var filterTags = ['a5064','a99d3','a5220','a55df','a99d2','a55b2'];
 	
+	
+	// for orientation:
+	// Level 0: "total" root of the tree, "Fotothek".
+	// Level 1: filter nodes with names from the above filterNames array
+	// Level 2: subnodes to each filter node have one of the available distinct values for the tag that represents the parent filter node (see filterTags array)
+	// Level 3: sub-subnodes where the routine finds out the URLs for each object in the db that has $lvl1tag = $lvl2name
+	
+	
+/** creates level 1 **/
 	// create one node for each of the given filter names and append it to the given root node
 	addNodesWithNamesToRoot(filterNames, rootNode);
 	
@@ -164,18 +173,31 @@ var createFilterLevel = function (rootNode)
 		nodeTagMap[filterNames[i]] = filterTags[i];
 		
 		var rootNode = window.kinectComponent.getNodeByName(filterNames[i]);
-		// 1.		
+		// 1. for the tag that defines one of the high-level filter nodes, get all distinct values		
 		getDistinctValuesForTag(filterTags[i]+'//text()', function(data)
 		{
 			var tempData = data.split(';'); 
 			
-			// 2.
+/** creates level 2 **/
+			// 2. now with all the distinct values as node names, add subnodes to each filter node
 			addNodesWithNamesToRoot(tempData, rootNode);
 			
+			// ... after that, add the third level for each of the subnodes
+			
+
+/** creates level 3 **/
+			
+			for(var j = 0; j < tempData.length; j++)
+			{
+				var nodeName = jQuery.trim(tempData[j]);
+				// beware, BAD PERFORMANCE!
+				createSublevelForNode(window.kinectComponent.getNodeByName(nodeName));
+			}
 		});
 	}
 	
-	createSublevelForNode(window.kinectComponent.getNodeByName("Grafik"));
+	
+	//createSublevelForNode(window.kinectComponent.getNodeByName("Grafik"));
 };
 
 var createSublevelForNode = function(node)
@@ -303,11 +325,12 @@ var addNodesWithNamesToRoot = function(nodeNames, rootNode)
 	var filter = [];
 	
 	var rgraph = window.kinectComponent.rgraph;
+	var actualMaximumNodes = maximumNodes - 1;
 	
 	for(var i = 0; i < nodeNames.length; i++)
 	{
 		// abort at maximum nodes (see beginning of file)
-		if(i > maximumNodes)
+		if(i > actualMaximumNodes)
 			return;
 		
 		// create a new node for each given node name
@@ -435,7 +458,7 @@ var demoCallback = function(data)
 
 var addChildCountToNode = function(node)
 {
-	if(window.quickDraw)
+	if(window.quickDraw) // do not add child count if the quick draw flag is set (because this takes quite some time)
 		return;
 	
 	// get node name & the parent's tag
