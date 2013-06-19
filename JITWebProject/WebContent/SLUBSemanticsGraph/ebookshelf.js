@@ -4,7 +4,7 @@
 // NOTE: RGraph rendering function at jit.custom.js line 8924
 var interestingNodes = ["Architekturzeichnungen", "Arbeiterfotografie", "Archiv der Fotografen", "DFG-Karten", "Möbelarchiv Weimer", "Künstlerzeitschriften"];
 // used in addNodesWithNamesToRoot
-var maximumNodes = 20;
+var maximumNodes = 10;
 // used to map which node is based on which tag
 var nodeTagMap = {};
 

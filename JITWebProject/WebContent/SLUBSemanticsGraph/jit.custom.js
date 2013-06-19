@@ -9091,17 +9091,22 @@ var globals = this;
           var histStyle = this.viz.NodeInHistory(fid, tid);
 
           if (lvl) {
+
             /*  render small childindicating edges
              either lvl2->lvl1 or lvl1->lvl2
              lvl0->lvl3 is ruled out by prior conditions
              */
-            var vect = $C(to.x - from.x, to.y - from.y).$scale(.15);
+
+        	  // deactivate
+        	  var vect = $C(to.x - from.x, to.y - from.y).$scale(.15);
             to = $C(from.x, from.y).$add(vect);
             ctx = canvas.getCtx();
             ctx.fillStyle = ctx.strokeStyle = "#aaa";
             ctx.lineWidth = .5;
             ctx.save();
             histStyle = +(tid == adj.nodeTo.id && histStyle);
+            // end deactivate
+            
 //          method = 'dash';
           }
 
