@@ -14,7 +14,7 @@
 
 * { margin:0; padding:0; }
 html, body { position:relative; height: 100%; }
-body { font-family: Verdana, Arial, Helvetica, Sans-Serif; font-size: 10px; padding: 0 900px 0 0; }
+body { font-family: Verdana, Arial, Helvetica, Sans-Serif; font-size: 10px; padding: 0 900px 0 0; overflow: hidden}
 img { border: none; }
 .hidden, *+html hr, #skipnav { display: none; }
 .floatclear { position: relative; clear: both; }
@@ -23,7 +23,8 @@ img { border: none; }
 
 
 #page { position: relative; min-height:100%; width: 100%;  }
-.centring { width: calc(100% - 400px); height: 100%;}
+.centring { width: 100%; height: 100%;}
+/*.centring { width: calc(100% - 400px); height: 100%;}*/
 /*.centring { position: relative; width: 900px; height: 100%; margin: 0 0 0 30%; }*/
 #header { position: relative; width: 100%; height: 300px; background: url(../images/headbg.png) repeat-x 0 -1px; padding: 0 900px 0 0; }
 #navbarbg { position: absolute; top: 30px; left: 0; width: 100%; height: 70px; background: url(../images/navbarbg.png) repeat-x 0 0;}

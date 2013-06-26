@@ -25,18 +25,11 @@
 <table role="presentation">
 <tr>
 <td>
-<!-- websocket support & kinect status -->
-<div id="websocket" class="kinectInfo">
+
+	
+<div id="gestureButtons">
 	Selected label: <label id="selection">None</label>
-	<br>
-	<br>
-	Status: <label id="status">None</label>
-	<br>
-	<canvas id="canvas" width="400" height="450"></canvas>
-	<script type="text/javascript" src="../websocket.js"></script>
-	
-	
-	<div id="gestureButtons">
+
 	<p>
 	<button onclick="gesture(1)">highlight next node</button>
 	<button onclick="gesture(2)">highlight previous node</button>
@@ -55,10 +48,12 @@
 	<select id="quickDrawList" onchange="toggleQuickDraw()"><option>false</option><option>true</option></select>
 	<BR>&nbsp;<BR>
 	<button onclick="toggleLabels()">toggle labels</button>
-	</div>
 </div>
+
 <!--  end of websocket support & kinect status -->
 </td>
+</tr>
+<tr>
 <td>
 <!--  graph & scripts container -->
 <div id="contentpos" class="EXLCustomLayoutContainer centring">
