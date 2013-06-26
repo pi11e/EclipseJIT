@@ -73,14 +73,29 @@ window.onload = function () {
             
     	}
         // if the incoming json represents a string message, append it to the console div
-        else 
+        else if(typeof jsonObject === 'string')
     	{
-        	consoleDiv.innerHTML = "<p>server message:</p><p>"+jsonObject+"</p>";
-        	//console.log(jsonObject.message);
-        	//jQuery("#console").append("<p> " + jsonObject + "</p>");
+        	// log the string for debugging purposes
+        	logJSONString(jsonObject);
+        	// TODO:
+        	// if the JSON string contains a gesture code, act accordingly by calling kinectComponent methods
+        	// or possibly the gesture code dispatcher
     	}
 
         // Inform the server about the update.
         //socket.send("Skeleton updated on: " + (new Date()).toDateString() + ", " + (new Date()).toTimeString());
     };
+};
+
+/**
+ * Shows the given string in a message div
+ */
+var logJSONString = function(JSONstring)
+{
+	//console.log("message received: " + JSONstring);
+	
+	// add a fadeIn / fadeOut effect for better noticeability
+	$("#messageDiv").fadeIn(100).fadeOut(10).fadeIn(10);
+	// set inner html to display the actual string
+	$("#messageDiv").html("<p>"+JSONstring+"</p>");
 };
