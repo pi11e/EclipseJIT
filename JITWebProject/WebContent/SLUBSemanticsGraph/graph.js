@@ -197,6 +197,7 @@ avgl.Graph.prototype._onClick = function(node, event) {
       title = node.name;
   avgl.setTemporaryItem('avgl.grt', target);
   
+  
 
   return self.rgraph.onClick(target, {
     hideLabels: false,

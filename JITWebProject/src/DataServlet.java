@@ -20,14 +20,15 @@ import de.tudresden.mg.ebookshelf.data.BaseXController;
 public class DataServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	private BaseXController dbController;
+	
        
     /**
      * @see HttpServlet#HttpServlet()
      */
     public DataServlet() {
         super();
-        this.dbController = new BaseXController();
+        // create a singleton instance
+        this.getDbController();
         
     }
 
@@ -38,7 +39,7 @@ public class DataServlet extends HttpServlet {
 
 		ServletOutputStream out = response.getOutputStream();
 
-		initializeDB();
+		checkDB();
 		
 		// execute query, expect it in request parameter "query"
 		String query = request.getParameter("query");
@@ -47,7 +48,7 @@ public class DataServlet extends HttpServlet {
 		if(query != null && query.startsWith("XQUERY"))
 		{
 			System.out.println(new Timestamp().getDate() +" DataServlet | executing " + query);
-			this.dbController.executeQuery(query, out);	
+			this.getDbController().executeQuery(query, out);	
 		}
 		else
 		{
@@ -65,20 +66,26 @@ public class DataServlet extends HttpServlet {
 	}
 	
 	
-	private void initializeDB()
+	private void checkDB()
 	{
 		// important flag: use sample data (MUCH smaller dataset) or not
 		boolean useSampleData = false;
-		
+		System.out.println(this.getServletContext().getContextPath());
 		String pathToXMLData = useSampleData ? this.getServletContext().getRealPath("data/sampleData.xml") : this.getServletContext().getRealPath("data/data.xml");
 		
 		// creates a server instance IF it is not already running
-		if(this.dbController.createServer(pathToXMLData))
+		if(this.getDbController().createServer(pathToXMLData))
 		{
 			System.out.println("Creating database ...");
 			System.out.println("Database with data from " + pathToXMLData);
 			System.out.println("is up and running.");
 		}
+	}
+	
+	private BaseXController getDbController()
+	{
+		// threadsafe implementation of BaseXController instance (singleton)
+		return BaseXController.getInstance();
 	}
 
 }

@@ -2,9 +2,9 @@
  * 
  */
 // NOTE: RGraph rendering function at jit.custom.js line 8924
-var interestingNodes = ["Architekturzeichnungen", "Arbeiterfotografie", "Archiv der Fotografen", "DFG-Karten", "Möbelarchiv Weimer", "Künstlerzeitschriften"];
-// used in addNodesWithNamesToRoot
-var maximumNodes = 10;
+
+// used in getDistinctValuesForTag
+var maximumNodes = 12;
 // used to map which node is based on which tag
 var nodeTagMap = {};
 
@@ -56,7 +56,11 @@ setTimeout(function()
 //	console.log("getSomeNodeId(" + someId + ") = " + someNode + " with name " + someNode.name);
 //	console.log(window.hasOwnProperty('$jit'));
 	
-	// setup with highlighting color
+	// initial graph setup:
+	// WARNING: when using graph_data.js, this is *only* done for the global root node, i.e. all nodes in the initial dataset. So no effect, really. Quite useless.
+	// 
+	// - setup with highlighting color
+	// - hide all labels deeper than 1 (global root has depth 0)
 	// http://philogb.github.io/jit/static/v20/Docs/files/Graph/Graph-js.html#Graph.Util.eachNode
 	this.kinectComponent.rgraph.graph.eachNode(function(node)
 		{
@@ -64,6 +68,12 @@ setTimeout(function()
 			node.data.regularColor = regularColor;
 			node.data.highlightColor = highlightedColor;
 			node.data.isHighlighted = false;
+			
+			if(node._depth > 1)
+			{
+				// set its label to be hidden
+				window.kinectComponent.rgraph.labels.getLabel(node.id).hidden = true;
+			}
 		}
 	);
 	
@@ -115,27 +125,80 @@ var queryDB = function(queryString, callback, callAsync)
  * @param tag - the tag to be evaluated for distinct values, e.g. 'a99d3'
  * @param callback - the callback function which is used to manipulate the returned data 
  */
-var getDistinctValuesForTag = function(tag, callback)
+var getDistinctValuesForTag = function(tag, callback, filterList)
 {
-	//e.g. for $x in distinct-values(//obj/a99d3) return ($x, '&#xa;')
+	// constructing a query that will do the following things:
+	// - get a result set that's based on the distinct values (i.e. subnodes) for the given tag
+	// - order by the amount of subnodes the values may have
+	// - filter out the contents of a given $filterList 
+	// - after all this is done, the query returns the first $maximumAmount entries of the result set
+	
+	// to achieve this, the query contains a helper function called "is-value-in-sequence", a filter list and the actual xquery statement using these (see below)
+	// var query = "XQUERY " + xqueryFunction + xqueryFilter + xqueryStatement; 
+	
+	var maximumAmount = maximumNodes;
 	var delimiter = ";";
-	var query = "XQUERY for $x in distinct-values(//obj//" + tag + ") return ($x, '" + delimiter + "')";
 	
 	
+	// this wraps an xquery representation of the above filter list 
+	var xqueryFilter = " let $filter := (";
+	
+	if(filterList && filterList.length > 0)
+	{
+		for(var i = 0; i < filterList.length; i++)
+		{
+			var filterWord = filterList[i];
+			
+			if(i === filterList.length-1)
+			{xqueryFilter += "'"+filterWord+"')";} // add last filter word and closing parenthesis
+			else
+			{xqueryFilter += "'"+filterWord+"',";} // add filter word and comma
+		}
+	}
+	else
+	{
+		// no valid filterlist was supplied - xquery filter is empty
+		xqueryFilter += "'') ";
+	}
+		
+
+	// this wraps the string declaring an "is-value-in-sequence" function which we'll need in the query
+	var xqueryFunction = "declare namespace functx = 'http://www.functx.com'; declare function functx:is-value-in-sequence( $value as xs:anyAtomicType? , $seq as xs:anyAtomicType* )  as xs:boolean { $value = $seq } ;"; 
+
+	// note: this second let clause constructs an intermediate result set which excludes items whose names are in the filter list and applies certain criteria on 
+	// the names; e.g. in some categories, the names should be longer than 1 and generally less than 23 characters long (otherwise there are display issues with the labels).
+	var letClause = '';
+	if(tag==='a55b2') // when going for the "Thema"-filter, there's a large number of single-letter entries that we don't want to see 
+	{
+		letClause = "let $resultset := for $x in distinct-values(//obj//"+tag+"/text()) where not(functx:is-value-in-sequence($x, $filter)) and string-length($x)>1 and string-length($x)<22 order by count(//obj["+tag+"=$x]) descending return $x ";
+	}
+	else if(tag === 'a55b3') // when going for the "Epoche"-filter, we only want those that actually have a number
+	{
+		//letClause = "let $resultset := for $x in distinct-values(//obj//"+tag+"/text()) where not(functx:is-value-in-sequence($x, $filter)) and starts-with($x, '1') order by count(//obj["+tag+"=$x]) descending return $x ";
+		
+		// this query works, but the nodes are seemingly not added in the same sequence as they are returned by BaseX 
+		letClause = "let $resultset := for $x in distinct-values(//obj//"+tag+"/text()) where not(functx:is-value-in-sequence($x, $filter)) and starts-with($x, '1') order by number(substring($x, 1, 4)) descending return $x ";
+	}
+	else
+	{
+		letClause = "let $resultset := for $x in distinct-values(//obj//"+tag+"/text()) where not(functx:is-value-in-sequence($x, $filter)) and string-length($x)<22 order by count(//obj["+tag+"=$x]) descending return $x ";
+	}
+	
+	var forClause =  "for $entry in subsequence($resultset, 1, "+maximumAmount+") return ($entry, '"+delimiter+"')";
+	
+	var query = "XQUERY " + xqueryFunction + xqueryFilter + letClause + forClause; 
+		
+	//console.log(query);
 	queryDB(query, callback, false);
 };
 
 var createFirstGraphLevel = function()
 {
 	
-	// DEMO
-	//getDistinctValuesForTag("a99d3", demoCallback); // end of getDistinctValuesForTag
-	
 	var startNode = window.kinectComponent.getNodeById("0");
 	createFilterLevel(startNode);
 	
 }; // end of createFirstGraphLevel()
-
 
 
 var createFilterLevel = function (rootNode)
@@ -145,7 +208,7 @@ var createFilterLevel = function (rootNode)
 	
 	/*
 	 * Tag		Count	Dokumentation				Filter Name
-	 * a5064	 6.701	Datierung					"nach Epoche"
+	 * a55b3	 6.701	Ebene 3						"nach Epoche"
 	 * a99d3	65.625	APS-Archiv					"nach Sammlung"
 	 * a5220	38.943	Gattung						"nach Gattung"
 	 * a55df	66.701	Schlagwort / Ikonographie	"nach Schlagwort"
@@ -153,7 +216,7 @@ var createFilterLevel = function (rootNode)
 	 * a55b2	52.904	"Ebene 2" bzw. Thema		"nach Thema"
 	 */
 	var filterNames = ['nach Epoche', 'nach Sammlung', 'nach Gattung', 'nach Schlagwort', 'nach Katalog', 'nach Thema'];
-	var filterTags = ['a5064','a99d3','a5220','a55df','a99d2','a55b2'];
+	var filterTags = ['a55b3','a99d3','a5220','a55df','a99d2','a55b2'];
 	
 	
 	// for orientation:
@@ -167,175 +230,81 @@ var createFilterLevel = function (rootNode)
 	// create one node for each of the given filter names and append it to the given root node
 	addNodesWithNamesToRoot(filterNames, rootNode);
 	
-	// then get distinct values for the given tags (1.) and create subnodes for those (2.)
+	var blacklist_sammlungen = ["KUR-Peter", "APS", "MI-Retro", "Grasser"];
+	var blacklist_schlagwort = ["Bildnis", "Portrait", "Gebirgslandschaften", "Hügellandschaften", "Sonstiges"];
+	var blacklist_thema = ["Ortskatalog systematisch", "Schlagwort-Katalog", "Volkskunde", "Geschichte", "Volksbildung | Pädagogik", "Feinwerktechnik, Optik", "Grundlagen der Technik, Wissenschaft und Kultur", "Verbrauchsgüterindustrie"];
+	
+	var blacklist = new Object();
+	blacklist["nach Sammlung"] = blacklist_sammlungen;
+	blacklist["nach Schlagwort"] = blacklist_schlagwort;
+	blacklist["nach Thema"] = blacklist_thema;
+	
+	
+	//Konzept: for each tag, get all distinct values, count the amount of subnodes for these and only take the top 12
 	for(var i = 0; i < filterNames.length; i++)
 	{
-		nodeTagMap[filterNames[i]] = filterTags[i];
 		
 		var rootNode = window.kinectComponent.getNodeByName(filterNames[i]);
-		// 1. for the tag that defines one of the high-level filter nodes, get all distinct values		
-		getDistinctValuesForTag(filterTags[i]+'//text()', function(data)
-		{
-			var tempData = data.split(';'); 
-			
-/** creates level 2 **/
-			// 2. now with all the distinct values as node names, add subnodes to each filter node
-			addNodesWithNamesToRoot(tempData, rootNode);
-			
-			// ... after that, add the third level for each of the subnodes
-			
-
-/** creates level 3 **/
-			
-			for(var j = 0; j < tempData.length; j++)
-			{
-				var nodeName = jQuery.trim(tempData[j]);
-				// beware, BAD PERFORMANCE!
-				createSublevelForNode(window.kinectComponent.getNodeByName(nodeName));
-			}
-		});
-	}
-	
-	
-	//createSublevelForNode(window.kinectComponent.getNodeByName("Grafik"));
-};
-
-var createSublevelForNode = function(node)
-{
-	// create a sublevel for a filter child node, e.g.
-	// filter: "nach Gattung", child: "Fotografie" -> that's what we'll be getting here.
-	
-	console.log("Creating sublevel for node " + node.name + " with parent " + node.data.parentName);
-	
-	
-	// 1. find the tag the parent is based on (in the example "nach Gattung", this tag will be a5220)
-	if(!node.data.parentName)
-	{
-		return;
-	}
-	
-	var nodeName = node.name;
-	var parentName = node.data.parentName;
-	var nodeTag = nodeTagMap[parentName];
-	
-	var rgraph = window.kinectComponent.rgraph;
-	
-	if(!nodeTag || !nodeName)
-	{
-		return;
-	}
-	
-	var temp = nodeTag + "='" + nodeName + "'"; // e.g. a5220='Fotografie'
-	
-	// now construct a query that returns all objects that satisfy the temp condition
-	var query = "XQUERY for $x in //obj["+ temp + "] return ($x//a8470//text(), ';')";
-	// a8470 => URL 
-	var callback = function(data)
-	{
-		// with this query, data contains a number of URLs, delimited by ;
-		tempData = data.split(';');
-		
-		for(var i = 0; i < tempData.length; i++)
-		{
-			var urlString = jQuery.trim(tempData[i]);
-			if(urlString && urlString !== "" && urlString.length > 1)
-			{
-				console.log("tempData with url strings = " + urlString);
-				
-				//var lightBoxHref = "<a href='" + urlString + "' rel='lightbox'/>";
-				
-				// create new node
-				var newNode = {
-						   id:		Math.ceil(Math.random()*100000).toString(),
-						   name:	"",
-						   data:	{
-							   			highlightColor: highlightedColor,
-							   			isHighlighted: false,
-							   			regularColor: leafNodeRegularColor,
-							   			parentName:	nodeName,
-							   			cnt: undefined,
-							   			href: urlString
-							   		}	
-				   }; // end of newNode
-			    rgraph.graph.addAdjacence(node, newNode);
-			}
-			
-		}
-	
-	};
-	
-	if(kinectComponent.getNodeByName(nodeName).data.cnt < 50)
-	{
-		console.log("submitting query for sublevel: " + query);
-		queryDB(query, callback, false);
-	}
-	
-	
-	// 3. reload graph 
-    rgraph.refresh();
-    rgraph.plot();
-};
-
-var createSublevelForNode2 = function(parentName)
-{
-	console.log("Creating sublevel for node " + parentName);
-	
-	var delimiterChar = ' '; // note: when splitting by ' ', terms like "Die Naturfreunde" will be split as well, see note below.
-	//var delimiterChar = ';';
-	
-	
-	
-	// Assume parentName is one of the possible distinct values of tag a99d3, e.g. 'Talleyrand' or 'Arbeiterfotografie'.
-	// For the given name, display a number of subnodes depending on interaction design mode.
-	var query = "XQUERY for $x in //obj[a99d3='"+parentName+"'] return (distinct-values($x//a55b3/text()), '"+delimiterChar+"')";
-	var tempData;
-	
-	/*
-	 * NOTE: 
-	 * There's a bothersome duality in values for the a55df tag, because its usage differs.
-	 * To demonstrate, here are some sample values:
-	 * "Faschismus Antisemitismus Pogrome Verb�nde SA" i.e. several theme-based tags, delimited by a space character
-	 * "Die Naturfreunde" i.e. one single semantic term not meant to be separated
-	 * " E�zimmerm�bel | Ausziehtische Portfolio-M�beldesign-E�zimmerm�bel " i.e. a wild combination of both of the above cases PLUS a new delimiter-character "|"
-	 */
-	
-	
-	var rootNode = window.kinectComponent.getNodeByName(parentName);
-	
-	if(!rootNode)
-	{
-		console.log("Invalid parent node; node with name '" + parentName + "' not found.");
-	}
-	
-	queryDB(query, function(data)
+		nodeTagMap[filterNames[i]] = filterTags[i]; // maps each node name to a tag, e.g. persists the struture explained in the first comments section of this function
+		getDistinctValuesForTag(filterTags[i], function(data)
 				{
-					// data will contain several tags delimited by ';'
-					tempData = data.split(delimiterChar);
-					tempData = removeDuplicatesFromArray(tempData);
-					console.log(tempData);
+					var tempData = data.split(';'); 
+//					console.log(tempData);
+//					console.log("#######");
+
+						
+/** creates level 2 **/
+					// 2. now with all the distinct values as node names, add subnodes to each filter node
 					addNodesWithNamesToRoot(tempData, rootNode);
-				}, false);
+								
+					
+				}, blacklist[filterNames[i]]);
+	}
+	
+	// Now, all nodes for levels 0-1-2 have been added.
+	// Next, we hide all labels for nodes in level 2
+	hideLabelsDeeperThanLevel(1);
+	
+	// Set default zoom level to 140% to avoid display issues where a centered (root) node draws over its child nodes
+	window.kinectComponent.rgraph.config.levelDistance *= 1.4;
+		
 };
+
+var hideLabelsDeeperThanLevel = function(level)
+{
+	if(typeof level === 'number')
+	{
+		this.kinectComponent.rgraph.graph.eachNode(function(node)
+				{
+					if(node._depth > level)
+					{
+						// set its label to be hidden
+						window.kinectComponent.rgraph.labels.getLabel(node.id).hidden = true;
+					}
+				}
+			);
+	}
+};
+
+
 
 var addNodesWithNamesToRoot = function(nodeNames, rootNode)
 {
 
 	nodeNames = removeDuplicatesFromArray(nodeNames);
-	//var filter = ['Kunst', 'des', '20.', 'Jahrhunderts', 'gedeckte'/*, 'Tische'*/];
-	var filter = [];
 	
 	var rgraph = window.kinectComponent.rgraph;
-	var actualMaximumNodes = maximumNodes - 1;
+//	var actualMaximumNodes = maximumNodes - 1;
 	
 	for(var i = 0; i < nodeNames.length; i++)
 	{
 		// abort at maximum nodes (see beginning of file)
-		if(i > actualMaximumNodes)
-			return;
+//		if(i > actualMaximumNodes)
+//			return;
 		
 		// create a new node for each given node name
 		var nodeName = jQuery.trim(nodeNames[i]);
-		if(nodeName === "" || nodeName === " " || nodeName.length === 1 || nodeName.indexOf('&') !== -1 || jQuery.inArray(nodeName, filter) !== -1)
+		if(nodeName.length < 2 || nodeName.indexOf('&') !== -1)
 		{
 			
 				// skip invalid, i.e. empty/short/'&'-containing, node names
@@ -358,9 +327,8 @@ var addNodesWithNamesToRoot = function(nodeNames, rootNode)
 		
 		addChildCountToNode(newNode);
 		
-	   rgraph.graph.addAdjacence(rootNode, newNode);
-	   //rgraph.refresh();
-	   
+	    rgraph.graph.addAdjacence(rootNode, newNode);
+	    
 		   
 	} // end of nodeNames for-loop
 	
@@ -368,92 +336,7 @@ var addNodesWithNamesToRoot = function(nodeNames, rootNode)
     rgraph.refresh();
     rgraph.plot();
     
-};
-
-var demoCallback = function(data) 
-{
-	// data contains the server response
-   var nodeNames = data.split(";");
-   //console.log(nodeNames);
-   
-   var rgraph = window.kinectComponent.rgraph;
-   
-   
-   // 1. create new node for each valid name in nodeNames
-   
-   
-   for(var i = 0; i < nodeNames.length; i++)
-   {
-	   var nodeName = jQuery.trim(nodeNames[i]);
-	   if(jQuery.inArray(nodeName, interestingNodes) === -1)
-		   continue;
-	   
-	   
-	   if(nodeName != undefined && nodeName !== "")
-	   {
-		   
-		   var newNode = {
-				   id:		i+10,//Math.ceil(Math.random()*100000).toString(),
-				   name:	nodeName,
-				   data:	{
-					   			highlightColor: highlightedColor,
-					   			isHighlighted: false,
-					   			regularColor: regularColor,
-					   			cnt: undefined
-					   		}
-				
-		   }; // end of newNode
-		   
-
-			// TODO: add book count for each node?
-				var query = "XQUERY for $x in 1 return (count(//obj[a99d3='"+ newNode.name +"']), "+ newNode.id +")";
-				  				
-				queryDB(query, function(data)
-				{
-					// data is expected to match format $amount_of_objects $node_id
-					var tempData = data.split(" ");
-					var childAmount = tempData[0];
-					var nodeId = tempData[1];
-					
-					// doesn't work. while the correct data.cnt gets set to the correct nodes, even when refreshed/plotted the numbers don't show
-					//window.kinectComponent.getNodeById(nodeId).data.cnt = childAmount;
-					
-				}, false);
-		   
-		   var rootNode = rgraph.graph.getNode(rgraph.root);
-		   
-		   
-		   
-		   //console.log("created node " + newNode.name + " with id " + newNode.id);
-		   rgraph.graph.addAdjacence(rootNode, newNode);
-		   rgraph.refresh();
-		   
-		   
-	   }
-   } // end of node-creating for-loop
-   
-   // test
-   // create 2nd graph level
-//   rgraph.graph.eachNode(function(node)
-//   {
-//	   console.log("DEBUG A: " + node._depth);
-//	   if(node._depth === 1)
-//	   {
-//		   console.log("DEBUG B");
-//		   createSublevelForNode(node.name);
-//	   }
-//	   
-//   });
-   
-   createSublevelForNode2("Möbelarchiv Weimer");
-   
-   
-   // 3. reload graph 
-   rgraph.refresh();
-   rgraph.plot();
-   
-   
-   
+    
 };
 
 var addChildCountToNode = function(node)
@@ -516,7 +399,6 @@ var addChildCountToNode = function(node)
  */
 var removeDuplicatesFromArray = function(array)
 {
-	// eliminate duplicates?
 	array = $.grep(array, function(v, k){
 	    return $.inArray(v ,array) === k;
 	});
@@ -526,7 +408,12 @@ var removeDuplicatesFromArray = function(array)
 
 var updateSelectionLabelWithText = function(text)
 {
-	// umm this is not necessary and does in fact work 'automatically':
+	// following line is is not necessary and does in fact work 'automatically':
 	//var selection = document.getElementById("selection");
+	if(text.substring(0, 4) === '<br>')
+	{
+		// slice this off
+		text = text.slice(4);
+	}
     selection.innerHTML = text;
 };

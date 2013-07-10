@@ -8,9 +8,31 @@ import org.basex.BaseXServer;
 import org.basex.core.cmd.CreateDB;
 import org.basex.server.ClientSession;
 
+
+
 public class BaseXController 
 {
 	private BaseXServer server = null;
+	private BaseXController _instance = null;
+	
+	// for details on java singletons, see
+	// http://en.wikipedia.org/wiki/Singleton_pattern#The_solution_of_Bill_Pugh
+	private BaseXController()
+	{
+		// private constructor prevents instantiation by other classes
+	}
+	
+	public static BaseXController getInstance()
+	{
+		return BaseXControllerHolder.INSTANCE;
+	}
+	
+	private static class BaseXControllerHolder
+	{
+		public static final BaseXController INSTANCE = new BaseXController();
+	}
+	
+	// end of singleton minutiae
 	
 	public boolean createServer(String pathToXMLData)
 	{

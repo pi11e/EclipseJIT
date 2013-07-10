@@ -8414,8 +8414,17 @@ var globals = this;
      Removes all nodes tagged as selected by the <ST.addNodeInPath> method.
      */
     clearNodesInPath: function(id) {
-      this.nodesInPath = new Array(this.root);
-      this.select((this.clickedNode && this.clickedNode.id) || this.root);
+        
+        var nodeId = (this.clickedNode && this.clickedNode.id) || this.root;
+        this.onClick(nodeId, {  
+  			 hideLabels: false  // keep showing labels during transition
+  		});
+        
+        if(id==="0")
+        	this.nodesInPath = new Array(id);
+        else
+        	this.nodesInPath = new Array(this.root);
+
     },
 
     selectPath: function(node) {
@@ -9063,6 +9072,7 @@ var globals = this;
       'line': {
         'render': function(adj, canvas) {
           /* Change 12 Begin insert */
+        	
           if (adj.nodeFrom._depth > 2 || adj.nodeTo._depth > 2)
           // Don't draw edges for lvl3 nodes
             return;
