@@ -29,6 +29,8 @@ window.kinectComponent =
 //				(visually emphasizing one node, allowing clear distinction from other nodes)
 		setHighlightedNode : function(node)
 		{
+			if(this.rgraph.busy)
+				return; // force user to wait until animation is done
 
 			if(!this.isNode(node))
 				return;
@@ -46,9 +48,6 @@ window.kinectComponent =
 			if(jQuery.inArray(node.id, this.rgraph.nodesInPath) !== -1) // meaning node.id IS in the nodesInPath array
 				return;
 			
-			// do not hide labels from global levels 0 and 1
-			var noHideLabels = ["Fotothek", "nach Gattung", "nach Sammlung", "nach Katalog", "nach Schlagwort", "nach Epoche", "nach Thema"];
-			
 			
 			// if given node isn't already highlighted,
 			if(this.highlightedNode !== node) // note: this.highlightedNode may be undefined at this point if no previous highlighting has happened
@@ -60,7 +59,6 @@ window.kinectComponent =
 				{
 					this.highlightedNode.data.isHighlighted = false;
 					// *new feature: hide label of unselected node - exclude global levels 0 and 1
-					//if(jQuery.inArray(node.name, noHideLabels) === -1)
 					if(!this.highlightedNode.getAdjacency(0))
 						this.rgraph.labels.getLabel(this.highlightedNode.id).hidden = true;
 				}
@@ -102,12 +100,17 @@ window.kinectComponent =
 		 */
 		centerNodeWithId : function(nodeId)
 		{
+//			if(this.rgraph.busy)
+//				return;
+			
 			if(this.isNode(this.rgraph.graph.getNode(nodeId)))
 			{
 				// the node we're looking for does indeed exist
 				this.rgraph.onClick(nodeId, {  
 					 hideLabels: false  // keep showing labels during transition
 				});
+				
+				getImageURLsForSubnodesOf(this.getNodeById(nodeId));
 			}
 		},
 		/**
@@ -139,12 +142,7 @@ window.kinectComponent =
 				    modes:['polar']
 				});
 		},
-		//- open / close node details
-//				(if selected node is a leaf - i.e. object - node, show its image and description)
-		toggleNodeDetails : function(nodeId)
-		{
-			
-		},
+		
 		
 		getNodeById : function(nodeId)
 		{
@@ -191,7 +189,7 @@ window.kinectComponent =
 								
 				var nodePath = this.rgraph.nodesInPath;
 				
-				// nodePath now contains an array of node ids from "start" node to current node
+				// nodePath now contains an array of node ids from "0" node to current node
 				// to move up the path by one level, we need to center on the node that appears
 				// in the second to last position in this list
 				
@@ -296,47 +294,181 @@ window.kinectComponent =
 		highlightPreviousNode: function()
 		{
 			this.highlightNextNode();
-		}
+		},
+		
+		/**
+		 * This function calculates the global level of a node, assuming the levels are
+		 * 0 - global root node 
+		 * 1 - the individual filter nodes
+		 * 2 - the value nodes for those filters
+		 * @param node - a node whose global level should be found
+		 * @returns {Number} - a number representing the global level (a value between 0-2) or null if no such node was found.
+		 */
+		getGlobalLevel: function(node)
+		{
+			if(this.isNode(node))
+			{
+				if(node.id === "0")
+				{	return 0;	}
+				else if(node.getAdjacency(0))
+				{	return 1;	}
+				else
+				{	return 2;	}
+			}
+			else
+			{
+				return null;
+			}
+			
+		},
+				
 }; 
 
-var pushImagesToGallery = function()
+var pushImagesToGallery = function(imageURLs)
 {
-	// input: selected node 
+	// imageURLs as an array of string urls to jpg images
 	
-	// pseudocode:
-	// selected node can be global level 1 (i.e. filter nodes "nach Sammlung", "nach Katalog" etc.) or global level 2 (possible value nodes for the filters)
-	// ... this method also needs to be called once at start to push the starting images to gallery
-	/* 
-	 * if(current root id is '0')
-	 * {
-	 * 		// push sample images for each (currently six) of the filter nodes to the gallery
-	 * }
-	 * else if(current root is global level 1)
-	 * {
-	 * 		// push sample images for each of the filter value nodes to the gallery
-	 * }
-	 * else if(current root is global level 2)
-	 * {
-	 * 		// this type of root node will not have any subnodes, but huge result sets
-	 * 		// push all images contained in the result set (maximum amount??) to the gallery
-	 * }
-	 */
+	// galleria wants data in this format:
+	/*	
+	var data = [
+    { image: "http://www.deutschefotothek.de/bilder/dflogo.png" },
+    { image: "http://www.deutschefotothek.de/bilder/dflogo.png" },
+	];
+	
+	// and then to (re)start galleria, call the run method: 
+	Galleria.run('#galleria', {
+    dataSource: data,
+	});
+	*/
+	var data = new Array();
+	// transform image urls for galleria:
+	for(var index in imageURLs)
+	{
+		var imageURL = imageURLs[index];
+		if(imageURL.match(/jpgh/))
+		{
+			// image url is malformed because of tag misuse,
+			// meaning the tag was declared multiple times resulting in a string like this:
+			// imageURL = http://url1.jpghttp://url2.jpg
+			// in this case, we only want to use the first image specified
+			imageURL = imageURL.substring(0, imageURL.indexOf('jpg')+3);
+		}
+		
+		if(imageURL.match(/jpg|png$/) !== null) // if its a valid image url
+		{
+			data.push({image: imageURL});
+		}
+		
+	}	
+	       
+	console.log(data);
+	
+	Galleria.run('#galleria', 
+		{
+			dataSource: data,
+		});
 	
 };
 
 /**
  * For a given filter tag (e.g. "a99d3") and its value (e.g. "KUR-Projekt"),
  * this function gets the image urls for all object nodes that have this value.
+ * These image URLs are then stored in window.imageURLs so they are globally accessible.
  */
-var getImageURLsForSubnodesOf = function(filterTag, filterValue)
+var getImageURLsForSubnodesOf = function(node)
 {
-	var query = "XQUERY for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return ($x//a8470//text(), ';')";
-	var callback = function(data)
+	var controller = window.kinectComponent;
+	var selectedNodeGlobalLevel = controller.getGlobalLevel(node); // will be a value between 0 and 2
+	var filterValue = undefined;
+	var filterTag = undefined;
+	var query = undefined;
+	
+	// reset imageURLs
+	window.imageURLs = new Array();
+	
+	if(selectedNodeGlobalLevel === 0)
 	{
-		imageURLs = data.split(";");
-		console.log(imageURLs);
-	};
+		// get image URLs for each of the (currently six) filter nodes
+		// ... these images should illustrate the filter node (e.g. "nach Sammlung", "nach Thema" etc.)
+		
+		// get a number of random images for each tag
+		var amountOfImagesPerTag = 1;
+		
+		/*
+		 * we will probably need an xquery shuffle function for that. here's one:
+		 * 
+		 	declare function local:shuffle($seq as item()*)
+			{
+			   for $i in local:randIntSeq(fn:count($seq))
+			   return $seq[$i]
+			};
+		 */
+		
+		// iterate over each filter node
+		for(var key in nodeTagMap) // see http://stackoverflow.com/questions/684672/loop-through-javascript-object
+		{
+			// make sure the key exists
+			if(nodeTagMap.hasOwnProperty(key))
+			{
+				filterTag = nodeTagMap[key];
+				// construct a query that asks for $amountOfImagesPerTag image URLs from a (random?) object that has the given tag
+				window.imageURLs.push("http://www.deutschefotothek.de/bilder/dflogo.png");
+			}
+		}
+	}
+	else if(selectedNodeGlobalLevel === 1)
+	{
+		// get image URLs for each possible value of the given filter; the tag which is represented by the node can be found in the nodeTagMap
+		// - NOTE: nodeTagMap maps a nodename to a tag and is defined in ebookshelf.js
+		// ... these images should illustrate the filter node values (one image per filter subnode, e.g. "KUR-Projekt", "Archiv der Fotografen" etc.)
+		filterTag = nodeTagMap[node.name];
+		
+		node.eachSubnode(function(node)
+		{
+			if(node.id === '0')
+			{	return;	}
+			else
+			{
+				window.imageURLs.push("http://www.deutschefotothek.de/cms/images/home-kartenforum.jpg");
+			}
+		});
+		
+	}
+	else if(selectedNodeGlobalLevel === 2)
+	{
+		// get image URLs for the result set that sits behind each filter value
+		// ... these images should represent the entire result set of a filter value (e.g. get all urls for objects that have "Archiv der Fotografen")
+		
+		// the filter tag we need to get from the parent of the selected node
+		
+		// getParents() fails when the filter value node is selected (is the root); getParents will return an empty array
+		// -> get the parent by looking up the path history, using the rgraph.nodesInPath property, which at this point will have 
+		// a length of 3 and look like this: ["0", $parentNode.id, node.id]
+		//var parentNode = node.getParents()[0];
+		
+		var parentNode = controller.getNodeById(controller.rgraph.nodesInPath[1]);
+		filterTag = nodeTagMap[parentNode.name];
+		filterValue = node.name;
+		query = "XQUERY for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return ($x//a8470//text(), ';')";
+		
+		var callback = function(data)
+		{
+			window.imageURLs = data.split(";");
+			//console.log(imageURLs);
+			
+		};
 
-	// note: queryDB is declared in ebookshelf.js
-	queryDB(query, callback, false);
+		// note: queryDB is declared in ebookshelf.js
+		queryDB(query, callback, false);
+		
+	}
+	else
+	{
+		return null;
+	}
+	
+	console.log(window.imageURLs.length);
+	// every time we get new image URLs, we want them to be displayed in the gallery
+	pushImagesToGallery(window.imageURLs);
 };
+

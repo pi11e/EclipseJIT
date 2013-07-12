@@ -197,7 +197,8 @@ avgl.Graph.prototype._onClick = function(node, event) {
       title = node.name;
   avgl.setTemporaryItem('avgl.grt', target);
   
-  
+  //	hacky:
+  getImageURLsForSubnodesOf(node);
 
   return self.rgraph.onClick(target, {
     hideLabels: false,

@@ -14,20 +14,65 @@
   <link rel="stylesheet" type="text/css" href="basic.css"/>
   <link rel="stylesheet" type="text/css" href="../lightbox/css/slimbox2.css"  />
   <title>DEMO</title>
+  
+  
 </head>
 <body>
 
-	<!-- entfernt: 
-		div id="searchbar"
-		div id="rightcol"
-		-->
-		
+<script type="text/javascript" src="jquery.js"></script>
+<button id='start' onclick="createFirstGraphLevel()">start the show</button>
+
 <table role="presentation">
+
+<tr>
+<td>
+
+<script type="text/javascript" src="../lib/galleria/galleria-1.2.9.min.js"></script>
+
+<script type="text/javascript">
+// set galleria div height to 50% of viewport
+$(function(){
+	
+	
+	var gallerySize = 0.5; // 50% of viewport
+      $('#galleria').height($(window).height()*gallerySize);
+	
+	// gets overwritten by CSS?
+      //$('#contentpos').height($(window).height()*gallerySize);
+      //$('#ns-avgl-facetgraph-infovis-canvaswidget').height($(window).height()*gallerySize);
+});
+
+</script>
+<div id="galleria" style="width: 100%; height: 0px">
+</div>
+
+<script type="text/javascript">
+// note: this must be done after adding the images via div
+	Galleria.loadTheme('../lib/galleria/themes/classic/galleria.classic.min.js');
+	//Galleria.configure({carousel : false});
+	
+	// other ways of handling data:
+	/*	
+	var data = [
+    { image: "http://www.deutschefotothek.de/bilder/dflogo.png" },
+    { image: "http://www.deutschefotothek.de/bilder/dflogo.png" },
+	];
+	
+	Galleria.run('#galleria', {
+    dataSource: data,
+	});
+	*/
+
+</script>
+
+</td>
+</tr>
+
 <tr>
 <td>
 
 	
-<div id="gestureButtons">
+<div id="gestureButtons" hidden>
 	Selected label: <label id="selection">None</label>
 
 	<p>
@@ -87,7 +132,6 @@
 </div><!-- end of contentpos -->
 
 <script type="text/javascript" src="kinectComponent.js"></script>
-<script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="polyfill.js"></script>
 <script type="text/javascript" src="jit.custom.js"></script>
 <script type="text/javascript" src="avgl.js"></script>

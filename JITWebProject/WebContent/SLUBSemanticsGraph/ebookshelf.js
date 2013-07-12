@@ -267,7 +267,8 @@ var createFilterLevel = function (rootNode)
 	
 	// Set default zoom level to 140% to avoid display issues where a centered (root) node draws over its child nodes
 	window.kinectComponent.rgraph.config.levelDistance *= 1.4;
-		
+	// get image urls for global root once (will trigger gallery population)
+	getImageURLsForSubnodesOf(window.kinectComponent.getNodeById('0'));
 };
 
 var hideLabelsDeeperThanLevel = function(level)
