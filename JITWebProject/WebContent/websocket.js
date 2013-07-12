@@ -6,44 +6,56 @@ var closeConnection = function(){
 };
 
 
-window.onload = function () {
-    var status = document.getElementById("status");
-    var canvas = document.getElementById("canvas");
-    var consoleDiv = document.getElementById("console");
-    var context = canvas.getContext("2d");
+window.onload = function () 
+{
+    var status = document.getElementById("kinect_status");
+    var canvas = document.getElementById("kinect_canvas");
+    var consoleDiv = document.getElementById("kinect_console");
+    var context;
 
-    // add border to canvas
-    canvas.style.border = "red 1px solid"
+    if(canvas && status)
+	{
+    	context = canvas.getContext("2d");
+    	// add border to canvas
+        canvas.style.border = "red 1px solid"
+        
+        canvas.width = window.innerWidth / 2;
+        canvas.height = window.innerHeight / 2;
+
+        if (!window.WebSocket) {
+            status.innerHTML = "Your browser does not support web sockets!";
+            return;
+        }
+
+        status.innerHTML = "Connecting to server...";
+	}
     
-    canvas.width = window.innerWidth / 2;
-    canvas.height = window.innerHeight / 2;
-
-    if (!window.WebSocket) {
-        status.innerHTML = "Your browser does not support web sockets!";
-        return;
-    }
-
-    status.innerHTML = "Connecting to server...";
 
     // Initialize a new web socket.
     socket = new WebSocket("ws://localhost:8181/KinectHtml5");
 
     // Connection established.
-    socket.onopen = function () {
-        status.innerHTML = "Connection successful.";
+    socket.onopen = function () 
+    {
+    	if(status)
+    	{	status.innerHTML = "Connection successful.";}
+    	console.log("Connection successful.");
     };
 
     // Connection closed.
     socket.onclose = function () {
-        status.innerHTML = "Connection closed.";
+    	if(status)
+    	{	status.innerHTML = "Connection closed.";}
+    	console.log("Connection closed.");
     };
 
     // Receive data FROM the server!
     socket.onmessage = function (evt) {
     	
     	
+    	if(status)
+        {status.innerHTML = "Kinect data received.";}
     	
-        status.innerHTML = "Kinect data received.";
 
         // Get the data in JSON format.
         var jsonObject = eval('(' + evt.data + ')');
@@ -52,7 +64,7 @@ window.onload = function () {
         
         
         // if the incoming json represents skeleton data, draw it in the canvas
-        if(jsonObject.type === 'JSONSkeletonCollection')
+        if(canvas && context && jsonObject.type === 'JSONSkeletonCollection')
     	{
         	context.clearRect(0, 0, canvas.width, canvas.height);
             context.fillStyle = "#FF0000";
@@ -80,6 +92,10 @@ window.onload = function () {
         	// TODO:
         	// if the JSON string contains a gesture code, act accordingly by calling kinectComponent methods
         	// or possibly the gesture code dispatcher
+        	if(window.kinectComponent)
+    		{
+        		window.kinectComponent.dispatchJSON(jsonObject);
+    		}
     	}
 
         // Inform the server about the update.
@@ -93,9 +109,12 @@ window.onload = function () {
 var logJSONString = function(JSONstring)
 {
 	//console.log("message received: " + JSONstring);
-	
-	// add a fadeIn / fadeOut effect for better noticeability
-	$("#messageDiv").fadeIn(100).fadeOut(10).fadeIn(10);
-	// set inner html to display the actual string
-	$("#messageDiv").html("<p>"+JSONstring+"</p>");
+	if($("#messageDiv") && $("#messageDiv").length > 0)
+	{
+		// add a fadeIn / fadeOut effect for better noticeability
+		$("#messageDiv").fadeIn(100).fadeOut(10).fadeIn(10);
+		// set inner html to display the actual string
+		$("#messageDiv").html("<p>"+JSONstring+"</p>");
+	}
+
 };

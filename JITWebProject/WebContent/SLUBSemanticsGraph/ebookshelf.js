@@ -273,6 +273,8 @@ var createFilterLevel = function (rootNode)
 
 var hideLabelsDeeperThanLevel = function(level)
 {
+	
+	
 	if(typeof level === 'number')
 	{
 		this.kinectComponent.rgraph.graph.eachNode(function(node)

@@ -29,6 +29,8 @@ window.kinectComponent =
 //				(visually emphasizing one node, allowing clear distinction from other nodes)
 		setHighlightedNode : function(node)
 		{
+			
+			
 			if(this.rgraph.busy)
 				return; // force user to wait until animation is done
 
@@ -243,7 +245,7 @@ window.kinectComponent =
 			this.rgraph.labels.hideLabels(!show);
 		},
 		
-		highlightNextNode: function()
+		highlightNextNode: function(countBackwards)
 		{
 			// what do we know?
 			// 1. the current root 
@@ -254,46 +256,83 @@ window.kinectComponent =
 			// - selection of the predecessor node should not be allowed/possible
 			// - selection should start at the top if no nodes have been selected
 			
-			// find all subnodes, exclude predecessor node
-			// id of predecessor will always be the second to last id in the history:
-			var predecessorId = this.rgraph.nodesInPath[this.rgraph.nodesInPath.length-2];
-			var currentRootId = this.rgraph.root;
-			var subnodes = this.rgraph.graph.getNode(currentRootId).getSubnodes();
+
+			// do not highlight if we're in global level 3, there are no valid subnodes here
+			var currentNode = this.rgraph.graph.getNode(this.rgraph.root);
+			if(this.getGlobalLevel(currentNode) === 3 || !this.isNode(currentNode))
+				return;
+			
+			
+			var subnodes = new Array();
+			var highlightedNodeNeighborIndexInSubnodes = 0;
+			
+			currentNode.eachSubnode(function(node)
+					{
+						// exclude predecessor node
+						if(node.id === '0')
+							return;
+						
+						// save all subnodes to the subnodes array
+						subnodes.push(node);
+						if(node.data.isHighlighted)
+						{
+							// NOTE: after pushing to the subnodes array, the index of the current node
+							// is equal to the array's length minus 1:
+							// assert subnodes.indexOf(node) === subnodes.length - 1
+							
+							// if one of the subnodes is highlighted already, the index of the next node to highlight is saved
+							if(countBackwards)
+							{
+								// if we're counting backwards, i.e. highlighting the previous node,
+								// the index before this one (which at this point is equal to the length
+								// of the subnodes array minus two) is saved
+								highlightedNodeNeighborIndexInSubnodes = subnodes.length - 2;
+							}
+							else
+							{
+								// if we're in regular mode, i.e. highlighting the next node,
+								// the index after this one (which at this point is equal to the length 
+								// of the subnodes array) is saved
+								highlightedNodeNeighborIndexInSubnodes = subnodes.length;
+							}
+							
+						}
+					});
+			
+			console.log("next node to highlight = " + highlightedNodeNeighborIndexInSubnodes);
+			
+
+			if(countBackwards)
+			{
+				// it is possible the index of the "previous" node underruns the first subnodes index, i.e. is smaller than zero
+				// - in this case, we start again from the back of the array.
+				if(highlightedNodeNeighborIndexInSubnodes < 0)
+					highlightedNodeNeighborIndexInSubnodes = subnodes.length-1;
+			}
+			else
+			{
+				// it is possible the index of the "next" node overruns the last subnodes index, i.e. is larger than subnodes.length-1
+				// - in this case, we start again from the beginning of the array.
+				if(highlightedNodeNeighborIndexInSubnodes > subnodes.length-1)
+					highlightedNodeNeighborIndexInSubnodes = 0;
+			} // <- note: with the encapsulated if-clauses above, this surrounding if/else for the countBackwards check is actually obsolete, but probably easier to read and maintain.
+			
+			
+			this.setHighlightedNode(subnodes[highlightedNodeNeighborIndexInSubnodes]);
+			//console.log("subnodes: " + subnodes);
 			
 			// - if no node is highlighted, highlight the first child of the current root
 			// - if a node has been highlighted, highlight the next child (relative to currently highlighted child) of the current root
 			// - do not highlight the predecessor
-//			if(subnodes && subnodes.length > 0)
-//			{
-//				// if subnodes exist...
-//				if(!highlightedNode)
-//				{
-//					// ... and none of those have been highlighted
-//					if(subnodes && subnodes.length > 0)
-//					{
-//						this.setHighlightedNode(subnodes[0]);
-//					}
-//				}
-//				else
-//				{
-//					// another node has been highlighted previously; we need to make sure to highlight exactly the next one in line
-//					// for this, find the index of the currently highlighted node in the subnodes array
-//					for(var i = 0; i < subnodes.length)
-//					{
-//						if(node.id === highlightedNode.id)
-//						{
-//						
-//						}
-//						else
-//					}
-//				}
-//			}
+
 			
 		},
 		
 		highlightPreviousNode: function()
 		{
-			this.highlightNextNode();
+			// do the same as highlightNextNode(), only in reverse order
+			this.highlightNextNode(true);
+			
 		},
 		
 		/**
@@ -321,6 +360,23 @@ window.kinectComponent =
 			}
 			
 		},
+		
+		dispatchJSON : function(data)
+		{
+			console.log(data);
+			if(data === "LeftHandSwipeRightGesture")
+			{
+				this.highlightNextNode();
+			}
+			else if(data === "RightHandSwipeLeftGesture")
+			{
+				this.highlightPreviousNode();
+			}
+			else if(data === "RightHandPullDownGesture")
+			{
+				this.centerHighlightedNode();
+			}
+		}
 				
 }; 
 
@@ -363,11 +419,31 @@ var pushImagesToGallery = function(imageURLs)
 	       
 	console.log(data);
 	
+	// a number of flags to control gallery behavior
+	var inFullscreenMode = false; // if the user is viewing images in fullscreen, stop slideshow
+	var userChangedImage = false; // if the user changed an image by interacting, that image should stay for 10 seconds; otherwise, slideshow runs at 3 seconds per image
+	 
+	
+	var autoplayValue = 3000; 
+	if(inFullscreenMode)
+	{
+		autoplayValue = false;
+	}
+	else if(userChangedImage)
+	{
+		autoplayValue = 1000;
+	}
+	// for possible options, see http://galleria.io/docs/options/
+	
 	Galleria.run('#galleria', 
 		{
 			dataSource: data,
+			height: $('#galleria').height,
+			autoplay : autoplayValue,
+			pauseOnInteraction : inFullscreenMode
 		});
 	
+	userChangedImage = false; // this needs to be re-set to default false 
 };
 
 /**
@@ -450,6 +526,10 @@ var getImageURLsForSubnodesOf = function(node)
 		filterTag = nodeTagMap[parentNode.name];
 		filterValue = node.name;
 		query = "XQUERY for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return ($x//a8470//text(), ';')";
+		
+		// thumbnail-pfad:
+		// http://fotothek.slub-dresden.de/fotos/df/ps/0006000/df_ps_0006095.jpg
+		// <- "fotos" durch "thumbs" ersetzen
 		
 		var callback = function(data)
 		{
