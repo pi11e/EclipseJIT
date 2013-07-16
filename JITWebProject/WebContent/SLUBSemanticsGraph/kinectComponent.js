@@ -80,12 +80,8 @@ window.kinectComponent =
 				if(!node.getAdjacency(0))
 					this.rgraph.labels.getLabel(node.id).hidden = false;
 				
-				// bug with new feature:
-				/*
-				 * fotothek -> nach Gattung -> * Skulptur, wird sichtbar
-				 * - zurücknavigieren zu fotothek -> gattung unsichtbar
-				 * - wieder vor navigieren zu gattung -> Skulptur noch immer sichtbar
-				 */
+				
+				
 			}
 		},
 		/**
@@ -257,9 +253,9 @@ window.kinectComponent =
 			// - selection should start at the top if no nodes have been selected
 			
 
-			// do not highlight if we're in global level 3, there are no valid subnodes here
+			// do not highlight if we're in global level 2, there are no valid subnodes here
 			var currentNode = this.rgraph.graph.getNode(this.rgraph.root);
-			if(this.getGlobalLevel(currentNode) === 3 || !this.isNode(currentNode))
+			if(this.getGlobalLevel(currentNode) === 2 || !this.isNode(currentNode))
 				return;
 			
 			
@@ -299,11 +295,14 @@ window.kinectComponent =
 						}
 					});
 			
-			console.log("next node to highlight = " + highlightedNodeNeighborIndexInSubnodes);
+			//console.log("next node to highlight = " + highlightedNodeNeighborIndexInSubnodes);
 			
 
 			if(countBackwards)
 			{
+				// center previous image in gallery
+				Galleria.get(0).prev(); // this gets the (single) Galleria instance and shows the previous image
+				
 				// it is possible the index of the "previous" node underruns the first subnodes index, i.e. is smaller than zero
 				// - in this case, we start again from the back of the array.
 				if(highlightedNodeNeighborIndexInSubnodes < 0)
@@ -311,6 +310,9 @@ window.kinectComponent =
 			}
 			else
 			{
+				// center next image in gallery
+				Galleria.get(0).next(); // this gets the (single) Galleria instance and shows the next image
+				
 				// it is possible the index of the "next" node overruns the last subnodes index, i.e. is larger than subnodes.length-1
 				// - in this case, we start again from the beginning of the array.
 				if(highlightedNodeNeighborIndexInSubnodes > subnodes.length-1)
@@ -380,7 +382,7 @@ window.kinectComponent =
 				
 }; 
 
-var pushImagesToGallery = function(imageURLs)
+var pushImagesToGallery = function(imageURLs, node)
 {
 	// imageURLs as an array of string urls to jpg images
 	
@@ -396,6 +398,9 @@ var pushImagesToGallery = function(imageURLs)
     dataSource: data,
 	});
 	*/
+	
+	var selectedNodeGlobalLevel = window.kinectComponent.getGlobalLevel(node); // will be a value between 0 and 2
+	
 	var data = new Array();
 	// transform image urls for galleria:
 	for(var index in imageURLs)
@@ -412,7 +417,16 @@ var pushImagesToGallery = function(imageURLs)
 		
 		if(imageURL.match(/jpg|png$/) !== null) // if its a valid image url
 		{
-			data.push({image: imageURL});
+			// construct a thumbnail path by exchanging "fotos" for "thumbs" in the path like so:
+			// sample image URL:
+			// http://fotothek.slub-dresden.de/fotos/df/ps/0006000/df_ps_0006095.jpg
+			// sample thumb URL for same image:
+			// http://fotothek.slub-dresden.de/thumbs/df/ps/0006000/df_ps_0006095.jpg
+			
+			
+			var thumbnailURL = imageURL.replace("fotos", "thumbs");
+			
+			data.push({thumb: thumbnailURL, image: imageURL});
 		}
 		
 	}	
@@ -424,10 +438,10 @@ var pushImagesToGallery = function(imageURLs)
 	var userChangedImage = false; // if the user changed an image by interacting, that image should stay for 10 seconds; otherwise, slideshow runs at 3 seconds per image
 	 
 	
-	var autoplayValue = 3000; 
-	if(inFullscreenMode)
+	var autoplayValue = 3000; // default: slideshow with 3 seconds per image (= 3000 ms)
+	if(inFullscreenMode || selectedNodeGlobalLevel < 3)
 	{
-		autoplayValue = false;
+		autoplayValue = false; // no slideshow when in levels 1 or 2 or when displaying a full screen image
 	}
 	else if(userChangedImage)
 	{
@@ -461,6 +475,8 @@ var getImageURLsForSubnodesOf = function(node)
 	
 	// reset imageURLs
 	window.imageURLs = new Array();
+	
+	// this method gets the image URLs for a given node based on its global level (
 	
 	if(selectedNodeGlobalLevel === 0)
 	{
@@ -499,13 +515,48 @@ var getImageURLsForSubnodesOf = function(node)
 		// ... these images should illustrate the filter node values (one image per filter subnode, e.g. "KUR-Projekt", "Archiv der Fotografen" etc.)
 		filterTag = nodeTagMap[node.name];
 		
-		node.eachSubnode(function(node)
+		
+		// for each subnode... 
+		node.eachSubnode(function(subnode)
 		{
-			if(node.id === '0')
-			{	return;	}
+			if(subnode.id === '0')
+			{	return;	} // ... (excluding the global root)
 			else
 			{
-				window.imageURLs.push("http://www.deutschefotothek.de/cms/images/home-kartenforum.jpg");
+				// find a random image from the result set behind that subnode
+				filterValue = subnode.name;
+				console.log("node name = " + node.name + "; filterTag = " + filterTag + "; filterValue = " + filterValue);
+				
+				// this returns all image URLs for the given filter tag and value
+				//query = "XQUERY for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return ($x//a8470//text(), ';')";
+				// we only want one (for each subnode), and it should be random
+				/*
+				 * example query:
+				 * 
+				 * - gets the entire result set
+					let $result := for $x in //obj where $x//a55b3//text()='1990 - Gegenwart' return ($x//a8470//text())
+					- creates a random index between 1 and length of result set
+					let $index := random:integer(count($result)) + 1
+					- returns the element at the random index... NOTE: index retrieval in BaseX/Xquery is 1-relative, not 0-relative!
+					- ... that's why the random index is manually set to +1 (otherwise it would start at 0)
+					- ... also IMPORTANT: the integer generation is maximum-exclusive, i.e. the actual count($result) will never be assigned! 
+					return ($index, ": ", $result[$index])
+				 * 
+				 * 
+				 */
+				var firstLetClause = "let $result := for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return $x//a8470//text() ";
+				var secondLetClause = "let $index := random:integer(count($result)) + 1 ";
+				var returnClause = "return $result[$index]";
+				query = "XQUERY " + firstLetClause + secondLetClause + returnClause;
+	
+				var callback = function(data)
+				{
+					window.imageURLs.push(data);
+					
+				};
+				
+				queryDB(query, callback, false);
+				//window.imageURLs.push("http://www.deutschefotothek.de/cms/images/home-kartenforum.jpg");
 			}
 		});
 		
@@ -527,9 +578,7 @@ var getImageURLsForSubnodesOf = function(node)
 		filterValue = node.name;
 		query = "XQUERY for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return ($x//a8470//text(), ';')";
 		
-		// thumbnail-pfad:
-		// http://fotothek.slub-dresden.de/fotos/df/ps/0006000/df_ps_0006095.jpg
-		// <- "fotos" durch "thumbs" ersetzen
+		
 		
 		var callback = function(data)
 		{
@@ -549,6 +598,6 @@ var getImageURLsForSubnodesOf = function(node)
 	
 	console.log(window.imageURLs.length);
 	// every time we get new image URLs, we want them to be displayed in the gallery
-	pushImagesToGallery(window.imageURLs);
+	pushImagesToGallery(window.imageURLs, node);
 };
 

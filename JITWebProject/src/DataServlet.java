@@ -35,8 +35,9 @@ public class DataServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+	{
+		
 		ServletOutputStream out = response.getOutputStream();
 
 		checkDB();
@@ -79,6 +80,7 @@ public class DataServlet extends HttpServlet {
 			System.out.println("Creating database ...");
 			System.out.println("Database with data from " + pathToXMLData);
 			System.out.println("is up and running.");
+			System.out.println("WARNING: Please make sure your encoding is set to UTF-8. Verify all Umlauts are encoded & rendered correctly!");
 		}
 	}
 	
