@@ -1,13 +1,19 @@
-var socket;
+var socket = undefined;
 var closeConnection = function(){
 	
 	if(socket)
 		socket.close();
 };
 
-
-window.onload = function () 
+var openConnection = function()
 {
+	if(socket)
+	{
+		console.log("Connection to kinect server already established.");
+		return;
+	}
+		
+	
     var status = document.getElementById("kinect_status");
     var canvas = document.getElementById("kinect_canvas");
     var consoleDiv = document.getElementById("kinect_console");
@@ -29,8 +35,8 @@ window.onload = function ()
 
         status.innerHTML = "Connecting to server...";
 	}
-    
-
+	
+	
     // Initialize a new web socket.
     socket = new WebSocket("ws://localhost:8181/KinectHtml5");
 
@@ -100,7 +106,15 @@ window.onload = function ()
 
         // Inform the server about the update.
         //socket.send("Skeleton updated on: " + (new Date()).toDateString() + ", " + (new Date()).toTimeString());
-    };
+    }; // end of socket.onmessage()
+    
+};
+
+window.onload = function () 
+{
+	this.openConnection();
+    
+
 };
 
 /**

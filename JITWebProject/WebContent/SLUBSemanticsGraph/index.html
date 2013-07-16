@@ -23,6 +23,7 @@
 <script type="text/javascript" src="../websocket.js"></script>
 
 <button id='start' onclick="createFirstGraphLevel()">start the show</button>
+<button id='start' onclick="openConnection()">kinect</button>
 
 <table role="presentation">
 
@@ -80,7 +81,7 @@ $(function(){
 <td>
 
 	
-<div id="gestureButtons" >
+<div id="gestureButtons" hidden>
 	Selected label: <label id="selection">None</label>
 
 	<p>

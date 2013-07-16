@@ -80,7 +80,24 @@ public class DataServlet extends HttpServlet {
 			System.out.println("Creating database ...");
 			System.out.println("Database with data from " + pathToXMLData);
 			System.out.println("is up and running.");
-			System.out.println("WARNING: Please make sure your encoding is set to UTF-8. Verify all Umlauts are encoded & rendered correctly!");
+			System.out.println("WARNING: Please make sure your encoding is set to UTF-8. Verify all special characters are encoded & rendered correctly.");
+			
+			/*
+			 * To set up proper UTF-8 encoding, you need to do two things:
+			 * 1. Make sure eclipse encodes all files in the workspace with UTF-8.
+			 * 		- open window/preferences in eclipse
+			 * 		- look for General/Workspace, then Text Encoding, set this option to UTF-8
+			 * 2. Set the integrated tomcat server config to encode all URIs in UTF-8.
+			 * 		- when using a tomcat that is integrated into the eclipse IDE, its config file will
+			 * 			reside in a "project" in the package explorer called servers
+			 * 		- find the name of your server environment there, then open the corresponding server.xml
+			 * 		- find the line that defines the HTTP connector on port 8080, it looks like this:
+			 *     		<Connector connectionTimeout="20000" port="8080" protocol="HTTP/1.1" redirectPort="8443"/>
+			 *     	- add an attribute URIEncoding='UTF-8' to this line, so it looks like this:
+			 *         <Connector connectionTimeout="20000" port="8080" protocol="HTTP/1.1" redirectPort="8443" URIEncoding="UTF-8"/>
+ 
+
+			 */
 		}
 	}
 	

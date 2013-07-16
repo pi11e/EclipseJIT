@@ -2,27 +2,27 @@ var ns_avgl_jsondata_graph =
 	[
 	 // zero level
 	           {"id":"0",
-	            "name":"Fotothek",
+	            "name":"DEBUG",
 	            "adjacencies":["10","11","12","13"]},
      // first level	            
 	           {"id":"10",
-	            "name":"<br>nach Gattung",
+	            "name":"nach Gattung",
 	            "adjacencies":["0"]},
 
 	           {"id":"11",
-	            "name":"<br>nach Schlagwort",
+	            "name":"nach Schlagwort",
 	            "adjacencies":["0"]},
 
 	           {"id":"12",
-	            "name":"<br>nach Katalog",
+	            "name":"nach Katalog",
 	            "adjacencies":["0"]},
 
 	           {"id":"13",
-	            "name":"<br>nach Sammlung",
+	            "name":"nach Sammlung",
 	            "adjacencies":["0"]},
 	            
 	            {"id":"14",
-		            "name":"<br>nach Epoche",
+		            "name":"nach Epoche",
 		            "adjacencies":["0"]},
      // 2nd level
 	            // gattung subnodes
