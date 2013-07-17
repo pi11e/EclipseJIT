@@ -122,13 +122,22 @@ window.onload = function ()
  */
 var logJSONString = function(JSONstring)
 {
+	
+	
 	//console.log("message received: " + JSONstring);
 	if($("#messageDiv") && $("#messageDiv").length > 0)
 	{
+		var stringArray = JSONstring.split(";");
+		htmlString = "";
+		for(var index in stringArray)
+		{
+			var string = stringArray[index];
+			htmlString += "<br>" + string;
+		}
 		// add a fadeIn / fadeOut effect for better noticeability
-		$("#messageDiv").fadeIn(100).fadeOut(10).fadeIn(10);
+		//$("#messageDiv").fadeIn(100).fadeOut(10).fadeIn(10);
 		// set inner html to display the actual string
-		$("#messageDiv").html("<p>"+JSONstring+"</p>");
+		$("#messageDiv").html(htmlString);
 	}
 
 };
