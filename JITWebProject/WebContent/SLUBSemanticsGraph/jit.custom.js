@@ -5232,7 +5232,38 @@ var globals = this;
           node.getPos(prop).getc(true), pos)) ? elem : node;
       }, flags);
       return node;
-    }
+    },
+    
+    // change insert
+    /* 
+    Method: getClosestNodeToNode
+
+    Returns the closest node to the given position but ignores the given node
+    */
+   getClosestNodeToNode: function(graph, pos, notThisNode, prop, flags) {
+     var node = null;
+     prop = prop || 'current';
+     pos = pos && pos.getc(true) || Complex.KER;
+     var distance = function(a, b) {
+       var d1 = a.x - b.x, d2 = a.y - b.y;
+       return d1 * d1 + d2 * d2;
+     };
+     this.eachNode(graph, function(elem) 
+    {
+    	 if(node == null)
+    	{
+    		 // do nothing
+    	}
+    	 else if(distance(elem.getPos(prop).getc(true), pos) < distance(
+    	         node.getPos(prop).getc(true), pos))
+    		 {
+    		 	return elem;
+    		 }
+       
+     }, flags);
+     return node;
+   }
+    // end of change
   };
 
 //Append graph methods to <Graph>

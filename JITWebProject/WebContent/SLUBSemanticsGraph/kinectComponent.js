@@ -50,6 +50,9 @@ window.kinectComponent =
 			if(jQuery.inArray(node.id, this.rgraph.nodesInPath) !== -1) // meaning node.id IS in the nodesInPath array
 				return;
 			
+			// do not highlight global root or hand vector
+			if(node.id === "0" || node.id === "1")
+				return;
 			
 			// if given node isn't already highlighted,
 			if(this.highlightedNode !== node) // note: this.highlightedNode may be undefined at this point if no previous highlighting has happened
@@ -365,7 +368,7 @@ window.kinectComponent =
 		
 		dispatchJSON : function(data)
 		{
-			console.log(data);
+			//console.log(data);
 			if(data === "LeftHandSwipeRightGesture")
 			{
 				this.highlightNextNode();

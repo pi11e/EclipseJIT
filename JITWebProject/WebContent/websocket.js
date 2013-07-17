@@ -70,24 +70,75 @@ var openConnection = function()
         
         
         // if the incoming json represents skeleton data, draw it in the canvas
-        if(canvas && context && jsonObject.type === 'JSONSkeletonCollection')
+        if(jsonObject.type === 'JSONSkeletonCollection')
     	{
-        	context.clearRect(0, 0, canvas.width, canvas.height);
-            context.fillStyle = "#FF0000";
-            context.beginPath();
+        	if(canvas && context)
+    		{
+        		context.clearRect(0, 0, canvas.width, canvas.height);
+                context.fillStyle = "#FF0000";
+                context.beginPath();	
+    		}
+        	
 
             // Display the skeleton joints.
             for (var i = 0; i < jsonObject.skeletons.length; i++) {
                 for (var j = 0; j < jsonObject.skeletons[i].joints.length; j++) {
                     var joint = jsonObject.skeletons[i].joints[j];
 
+                    if(canvas && context)
+                    {
                     // Draw!!!
                     context.arc(parseFloat(joint.x), parseFloat(joint.y), 10, 0, Math.PI * 2, true);
+                    }
+                    
+                    
+                    var isLeftHand = joint.name === "handleft";
+                    var isRightHand = joint.name === "handright";
+                    if(isLeftHand || isRightHand)
+                	{
+                    	// draw node on graph?
+                        if(window.kinectComponent)
+                    	{
+                        	var controller = window.kinectComponent;
+                        	var rgraph = controller.rgraph;
+                        	
+                        	if(isLeftHand)
+                    		{
+                        		console.log("lh.x = " + joint.x + "; lh.y = " + joint.y);
+                        		// scale joint coords to a 100x100 quad
+                        		var factor = Math.PI * 8;
+                        		var scaledX = joint.x / factor;
+                        		var scaledY = joint.y / factor;
+                        		if(controller.getNodeById("1") === undefined)
+                    			{
+                        			rgraph.graph.addNode({id: "1", name:"", data:""});
+                    			}
+                        		
+                        		
+                        		//controller.getNodeById("1").setPos(new $jit.Complex(scaledX, scaledY));
+                        		//controller.getNodeById("1").setPos(new $jit.Polar(scaledX, 120));
+                        		
+                        		// set highlight to closest graph node
+                        		//var closestNode = rgraph.graph.getClosestNodeToNode(controller.getNodeById("1").getPos(), controller.getNodeById("1"));
+                        		//console.log("found closest node: " + closestNode);
+                        		//controller.setHighlightedNode(closestNode);
+                        		
+                        		//rgraph.plot();
+                    		}
+                        	
+                        	
+                    	}
+                	}
                 }
             }
 
-            context.closePath();
-            context.fill();
+            if(canvas && context)
+        	{
+	            context.closePath();
+	            context.fill();
+        	}
+            
+            
             
     	}
         // if the incoming json represents a string message, append it to the console div
