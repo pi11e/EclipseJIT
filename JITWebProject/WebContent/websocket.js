@@ -80,13 +80,18 @@ var openConnection = function()
     		}
         	
 
-        	var hands = new Object();
+        	var skeletonData = new Array();
         	
             // Display the skeleton joints.
-            for (var i = 0; i < jsonObject.skeletons.length; i++) {
-                for (var j = 0; j < jsonObject.skeletons[i].joints.length; j++) {
+            for (var i = 0; i < jsonObject.skeletons.length; i++) 
+            {
+            	var aSkeleton = new Object();
+            	
+                for (var j = 0; j < jsonObject.skeletons[i].joints.length; j++) 
+                {
                     var joint = jsonObject.skeletons[i].joints[j];
-
+                    aSkeleton[joint.name] = joint;
+                    
                     if(canvas && context)
                     {
                     // Draw!!!
@@ -94,21 +99,24 @@ var openConnection = function()
                     }
                     
                     
-                    var isLeftHand = joint.name === "handleft";
-                    var isRightHand = joint.name === "handright";
                     
-                    if(isLeftHand || isRightHand)
-                	{
-                    	
-                    	// draw node on graph?
-                        if(window.kinectComponent)
-                    	{
-                        	window.kinectComponent.dispatchHandMovement(isLeftHand, joint);
-                    	}
-                	}
-                }
-            }
-
+                    
+                } // end of joint-loop within a skeleton
+                
+                // now, aSkeleton holds all joints accesible by their name (note: names are all lowercase in the form of $bodypart[left|right|center],
+                // e.g. handleft, hipcenter etc.
+                
+                // save aSkeleton to skeletonData
+                skeletonData[i] = aSkeleton;
+            } // end of skeleton loop within jsonObject
+            
+            // now, skeletonData holds 1-2 skeletons along with their joints
+            if(window.kinectComponent)
+        	{
+            	window.kinectComponent.dispatchHandMovement(skeletonData);
+        	}
+            
+            
             if(canvas && context)
         	{
 	            context.closePath();
@@ -117,8 +125,8 @@ var openConnection = function()
             
             
             
-    	}
-        // if the incoming json represents a string message, append it to the console div
+    	} // end of _if(typeof jsonObject === 'JSONSkeletonCollection')_
+        // if the incoming json represents a string message instead, append it to the console div
         else if(typeof jsonObject === 'string')
     	{
         	// log the string for debugging purposes
@@ -126,9 +134,9 @@ var openConnection = function()
         	// TODO:
         	// if the JSON string contains a gesture code, act accordingly by calling kinectComponent methods
         	// or possibly the gesture code dispatcher
-        	if(window.kinectComponent)
+        	if(jsonObject.match('^handconfig') && window.kinectComponent)
     		{
-        		window.kinectComponent.dispatchJSON(jsonObject);
+        		window.kinectComponent.dispatchHandInteraction(jsonObject);
     		}
     	}
 

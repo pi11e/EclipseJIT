@@ -22,6 +22,8 @@ window.kinectComponent =
 		// set by this.setHighlightedNode(node) which in turn is called by the avgl.Graph constructor (graph.js line 6)
 		highlightedNode: undefined, 
 		
+		handConfig : new Object(),
+		
 		// note: in function scope, "this" is the kinect component itself
 		//functions required for graph manipulation:
 
@@ -366,6 +368,38 @@ window.kinectComponent =
 			
 		},
 		
+		dispatchHandInteraction : function(data)
+		{
+			// expect a string message that says:
+			// "handconfig:[left|right]:$isActive:$isGripped"
+			// where $isActive is a boolean and $isGripped can be [Grip|GripRelease|None]
+			var interactionData = data.split(":");
+			// interaction data looks like this: 
+			// ["handconfig", "right", "True", "GripRelease", ""] 
+			// or this:
+			// ["handconfig", "left", "False", "Grip", ""]
+			
+			// NOTE: the value "None" for $isGripped is only assigned if there is no user present
+			
+			var isLeftHand = interactionData[1] === 'left';
+			var isActive = interactionData[2] === 'True';
+			var isGripped = interactionData[3] === 'Grip';
+			
+			if(isLeftHand)
+			{
+				this.handConfig.left = {active : isActive, gripped : isGripped};
+			}
+			else
+			{
+				this.handConfig.right = {active : isActive, gripped : isGripped};
+			}
+			
+		},
+		
+		/**
+		 * @unused
+		 * 
+		 */
 		dispatchJSON : function(data)
 		{
 			//console.log(data);
@@ -383,32 +417,87 @@ window.kinectComponent =
 			}
 		},
 		
-		dispatchHandMovement : function(isLeftHand, joint)
+		dispatchHandMovement : function(skeletonData)
 		{
-			console.log("dispatching hand movement");
-        	if(isLeftHand)
-    		{
-        		
-        		// scale joint coords to a 100x100 quad
-        		var factor = Math.PI * 8;
-        		var scaledX = joint.x / factor;
-        		var scaledY = joint.y / factor;
-        		
-        		// create hand node
+			/*
+			 * possible joint names:
+			 
+			ankleleft	ankleright	elbowleft
+			elbowright	footleft	footright
+			handleft	handright	head
+			hipcenter	hipleft		hipright
+			kneeleft	kneeright	shouldercenter
+			wristleft	spine		shoulderleft
+			shoulderright			wristright
+			
+			 */
+			
+			
+			//console.log("dispatching hand movement");
+			for(var i = 0; i < skeletonData.length; i++)
+			{
+				var skeleton = skeletonData[i];
+				
+				var leftHand = skeleton["handleft"];
+				var rightHand = skeleton["handright"];
+				var leftElbow = skeleton["elbowleft"];
+				var rightElbow = skeleton["elbowright"];
+				
+				var spineDepth = skeleton["spine"].z;
+				//console.log(spineDepth);
+				
+				// documentation of handConfig:
+				// this.handConfig.[left|right] = {active: [true|false], gripped: [true|false]}
+				
+				
+				// we need to find
+				// a) the negative elbow vector
+				// b) the vector from elbow to hand
+				// with these, we want to calculate the angle between them and set that angle as position for the node
+				
+				var elbowToHandVector = new Object();
+				var negativeElbowVector = new Object();
+				var theta = 0;
+				
+				// if either hand is active:
+				if(this.handConfig.left.gripped)
+				{
+					// compute vector between left hand and left elbow
+					elbowToHandVector.x = leftHand.x - leftElbow.x;
+					elbowToHandVector.y = leftHand.y - leftElbow.y;
+					
+					negativeElbowVector.x = leftElbow.x * -1;
+					negativeElbowVector.y = leftElbow.y * -1;
+					
+					theta = this.getAngleBetweenVectors(elbowToHandVector, leftElbow);
+					console.log("theta in degrees = " + this.radToDeg(theta));
+					
+				}
+				else if(this.handConfig.right.gripped)
+				{
+					// compute vector between right hand and right elbow
+					
+				}
+				else
+				{
+					// if no hand is active, do nothing
+					return;
+				}
+				
+				
+				// create hand node
         		if(this.getNodeById("1") === undefined)
     			{
         			this.rgraph.graph.addNode({id: "1", name:"", data:""});
     			}
         		
-        		
-        		// use elbow as origin and calculate the vector to the corresponding hand as base x/y vector to use
-        		
-        		// calculate new position angle (theta) based on x/y vector of the hand joint
-        		// (maybe x,y need to be scaled)
+        		// use elbow as origin         		
+        		// calculate new position angle (theta) between elbow and hand vectors
+
         		// as per http://www.mathsisfun.com/polar-cartesian-coordinates.html,
         		// the required angle can be found using the tangent function where tan(theta) = y/x
         		// thus, theta = tan^-1 (y/x) = atan(y/x)
-        		var theta = Math.atan(joint.y/joint.x);
+        		
         		// radius for the new position, i.e. the polar norm, can be specified here. 
         		// the default value for the first node level, depending on zoom level, is 120 (i.e. visible subnodes will have a norm of 120)
         		var radius = 100;
@@ -424,10 +513,24 @@ window.kinectComponent =
         		//this.setHighlightedNode(closestNode);
         		
         		this.rgraph.plot();
-    		}
+				
+			}
+			
+		},
+		
+		getAngleBetweenVectors : function(v1, v2)
+		{
+			return Math.acos( (v1.x * v2.x + v1.y * v2.y) / (Math.sqrt(v1.x*v1.x+v1.y*v1.y) * Math.sqrt(v2.x*v2.x+v2.y*v2.y)) );
+		},
+		
+		radToDeg : function(radiansValue)
+		{
+			return radiansValue * 180 / Math.PI;
 		}
 				
 }; 
+
+
 
 var pushImagesToGallery = function(imageURLs, node)
 {
