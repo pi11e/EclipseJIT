@@ -440,6 +440,9 @@ window.kinectComponent =
 				
 				var leftHand = skeleton["handleft"];
 				var rightHand = skeleton["handright"];
+				var leftShoulder = skeleton["shoulderleft"];
+				var rightShoulder = skeleton["shoulderright"];
+				
 				var leftElbow = skeleton["elbowleft"];
 				var rightElbow = skeleton["elbowright"];
 				
@@ -449,62 +452,67 @@ window.kinectComponent =
 				// documentation of handConfig:
 				// this.handConfig.[left|right] = {active: [true|false], gripped: [true|false]}
 				
+				// factor should have a range of [-1,1]
+				var accelerationFactor = 0;
 				
-				// we need to find
-				// a) the negative elbow vector
-				// b) the vector from elbow to hand
-				// with these, we want to calculate the angle between them and set that angle as position for the node
 				
-				var elbowToHandVector = new Object();
-				var negativeElbowVector = new Object();
-				var theta = 0;
 				
 				// if either hand is active:
-				if(this.handConfig.left.gripped)
+				if(this.handConfig.left.active && this.handConfig.left.gripped)
 				{
-					// compute vector between left hand and left elbow
-					elbowToHandVector.x = leftHand.x - leftElbow.x;
-					elbowToHandVector.y = leftHand.y - leftElbow.y;
+	        		// calculate acceleration factor based on hand distance from elbow
+					var distance = leftHand.x - leftElbow.x;
+					distance = this.clampToRange(distance, 60);
 					
-					negativeElbowVector.x = leftElbow.x * -1;
-					negativeElbowVector.y = leftElbow.y * -1;
+					// distance is in range [-60,60]
 					
-					theta = this.getAngleBetweenVectors(elbowToHandVector, leftElbow);
-					console.log("theta in degrees = " + this.radToDeg(theta));
-					
+					// map to [-1, 1]
+					accelerationFactor = distance / 60;
+					// map to [0, 2]
+					//accelerationFactor += 1;
+
 				}
-				else if(this.handConfig.right.gripped)
+				else if(this.handConfig.right.active && this.handConfig.right.gripped)
 				{
-					// compute vector between right hand and right elbow
+					var distance = rightHand.x - rightElbow.x;
+					distance = this.clampToRange(distance, 60);
+					// distance is in range [-60,60]
 					
+					// map to [-1, 1]
+					accelerationFactor = distance / 60;
 				}
 				else
 				{
 					// if no hand is active, do nothing
+					// maybe hide node w/ id 1?
+//					this.rgraph.graph.removeNode("1");
 					return;
 				}
 				
 				
+        		// radius for the new position, i.e. the polar norm, can be specified here. 
+        		// the default value for the first node level, depending on zoom level, is 120 (i.e. visible subnodes will have a norm of 120)
+        		var radius = 150;
+				
 				// create hand node
         		if(this.getNodeById("1") === undefined)
     			{
-        			this.rgraph.graph.addNode({id: "1", name:"", data:""});
+        			this.rgraph.graph.addNode({id: "1", name:"", data:{regularColor:"#F90", isHighlighted: false} });
+        			// set default position?
+        			this.getNodeById("1").setPos(new $jit.Polar(0,radius));
     			}
         		
-        		// use elbow as origin         		
-        		// calculate new position angle (theta) between elbow and hand vectors
 
-        		// as per http://www.mathsisfun.com/polar-cartesian-coordinates.html,
-        		// the required angle can be found using the tangent function where tan(theta) = y/x
-        		// thus, theta = tan^-1 (y/x) = atan(y/x)
+        		// adjust position of the hand node
+        		var oldTheta = this.getNodeById("1").getPos().theta;
+        		if(oldTheta === 0) {oldTheta = 2*Math.PI;}
         		
-        		// radius for the new position, i.e. the polar norm, can be specified here. 
-        		// the default value for the first node level, depending on zoom level, is 120 (i.e. visible subnodes will have a norm of 120)
-        		var radius = 100;
-        		
+        		var baseSpeed = 0.1;
+        		var newTheta = oldTheta + baseSpeed * accelerationFactor;
+        		console.log("acceleration: " + accelerationFactor + "; newTheta: " + newTheta);
         		
         		// Polar(theta, rho) where theta is the angle and rho the norm (i.e. radius)
-        		var newPos = new $jit.Polar(theta, radius);  
+        		var newPos = new $jit.Polar(newTheta, radius);  
         		this.getNodeById("1").setPos(newPos);
         		
         		// set highlight to closest graph node
@@ -515,6 +523,17 @@ window.kinectComponent =
         		this.rgraph.plot();
 				
 			}
+			
+		},
+		
+		clampToRange : function(value, maxDistance)
+		{
+			
+			// clamp value between [-maxDistance, maxDistance]
+			if(value > 0)
+				{return Math.min(maxDistance, value);}
+			else
+				{return Math.max(-maxDistance, value);}
 			
 		},
 		

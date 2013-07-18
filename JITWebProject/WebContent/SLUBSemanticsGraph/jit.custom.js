@@ -8970,7 +8970,9 @@ var globals = this;
             dim = node.getData('dim'),
             ctx = canvas.getCtx();
           /* Change 11 Begin insert */
-          if (!node._depth || this.viz.NodeInHistory(node.id) > 1) {
+          if (node.id !== "1" && !node._depth || this.viz.NodeInHistory(node.id) > 1) 
+          {
+        	  
             ctx.fillStyle = ctx.strokeStyle = SLUB_COLORS.act; // paint red circle (act = #c00)
             ctx.save();
           }
