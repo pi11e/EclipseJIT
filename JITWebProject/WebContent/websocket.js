@@ -80,6 +80,8 @@ var openConnection = function()
     		}
         	
 
+        	var hands = new Object();
+        	
             // Display the skeleton joints.
             for (var i = 0; i < jsonObject.skeletons.length; i++) {
                 for (var j = 0; j < jsonObject.skeletons[i].joints.length; j++) {
@@ -94,39 +96,14 @@ var openConnection = function()
                     
                     var isLeftHand = joint.name === "handleft";
                     var isRightHand = joint.name === "handright";
+                    
                     if(isLeftHand || isRightHand)
                 	{
+                    	
                     	// draw node on graph?
                         if(window.kinectComponent)
                     	{
-                        	var controller = window.kinectComponent;
-                        	var rgraph = controller.rgraph;
-                        	
-                        	if(isLeftHand)
-                    		{
-                        		console.log("lh.x = " + joint.x + "; lh.y = " + joint.y);
-                        		// scale joint coords to a 100x100 quad
-                        		var factor = Math.PI * 8;
-                        		var scaledX = joint.x / factor;
-                        		var scaledY = joint.y / factor;
-                        		if(controller.getNodeById("1") === undefined)
-                    			{
-                        			rgraph.graph.addNode({id: "1", name:"", data:""});
-                    			}
-                        		
-                        		
-                        		//controller.getNodeById("1").setPos(new $jit.Complex(scaledX, scaledY));
-                        		//controller.getNodeById("1").setPos(new $jit.Polar(scaledX, 120));
-                        		
-                        		// set highlight to closest graph node
-                        		//var closestNode = rgraph.graph.getClosestNodeToNode(controller.getNodeById("1").getPos(), controller.getNodeById("1"));
-                        		//console.log("found closest node: " + closestNode);
-                        		//controller.setHighlightedNode(closestNode);
-                        		
-                        		//rgraph.plot();
-                    		}
-                        	
-                        	
+                        	window.kinectComponent.dispatchHandMovement(isLeftHand, joint);
                     	}
                 	}
                 }
@@ -163,6 +140,7 @@ var openConnection = function()
 
 window.onload = function () 
 {
+	
 	this.openConnection();
     
 

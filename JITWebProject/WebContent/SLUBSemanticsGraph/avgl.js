@@ -143,7 +143,7 @@ avgl.load =
 {
 		graph: function() 
 		{
-			typeof ns_avgl_jsondata_graph == 'undefined' && jQuery.getScript('graph_data.js', function() 
+			typeof ns_avgl_jsondata_graph == 'undefined' && jQuery.getScript('graph_data2.js', function() 
 					{
 							new avgl.Graph(ns_avgl_jsondata_graph);
 					}

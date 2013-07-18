@@ -381,6 +381,50 @@ window.kinectComponent =
 			{
 				this.centerHighlightedNode();
 			}
+		},
+		
+		dispatchHandMovement : function(isLeftHand, joint)
+		{
+			console.log("dispatching hand movement");
+        	if(isLeftHand)
+    		{
+        		
+        		// scale joint coords to a 100x100 quad
+        		var factor = Math.PI * 8;
+        		var scaledX = joint.x / factor;
+        		var scaledY = joint.y / factor;
+        		
+        		// create hand node
+        		if(this.getNodeById("1") === undefined)
+    			{
+        			this.rgraph.graph.addNode({id: "1", name:"", data:""});
+    			}
+        		
+        		
+        		// use elbow as origin and calculate the vector to the corresponding hand as base x/y vector to use
+        		
+        		// calculate new position angle (theta) based on x/y vector of the hand joint
+        		// (maybe x,y need to be scaled)
+        		// as per http://www.mathsisfun.com/polar-cartesian-coordinates.html,
+        		// the required angle can be found using the tangent function where tan(theta) = y/x
+        		// thus, theta = tan^-1 (y/x) = atan(y/x)
+        		var theta = Math.atan(joint.y/joint.x);
+        		// radius for the new position, i.e. the polar norm, can be specified here. 
+        		// the default value for the first node level, depending on zoom level, is 120 (i.e. visible subnodes will have a norm of 120)
+        		var radius = 100;
+        		
+        		
+        		// Polar(theta, rho) where theta is the angle and rho the norm (i.e. radius)
+        		var newPos = new $jit.Polar(theta, radius);  
+        		this.getNodeById("1").setPos(newPos);
+        		
+        		// set highlight to closest graph node
+        		//var closestNode = this.rgraph.graph.getClosestNodeToNode(this.getNodeById("1").getPos(), this.getNodeById("1"));
+        		//console.log("found closest node: " + closestNode);
+        		//this.setHighlightedNode(closestNode);
+        		
+        		this.rgraph.plot();
+    		}
 		}
 				
 }; 
