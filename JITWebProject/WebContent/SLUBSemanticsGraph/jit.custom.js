@@ -5240,28 +5240,53 @@ var globals = this;
 
     Returns the closest node to the given position but ignores the given node
     */
-   getClosestNodeToNode: function(graph, pos, notThisNode, prop, flags) {
-     var node = null;
+   getClosestNodeToNode: function(graph, node, prop, flags) {
+     
      prop = prop || 'current';
-     pos = pos && pos.getc(true) || Complex.KER;
+     var closestNode = null;
+     
+     var nodePos = node.getPos() && node.getPos().getc(true) || Complex.KER;
+     
      var distance = function(a, b) {
        var d1 = a.x - b.x, d2 = a.y - b.y;
        return d1 * d1 + d2 * d2;
      };
+     
      this.eachNode(graph, function(elem) 
     {
-    	 if(node == null)
-    	{
+    	 // ignore global root and the given node itself
+    	 if(elem.id === "0" || elem === node || elem._depth === undefined || elem._depth > 1)
+		 {
     		 // do nothing
-    	}
-    	 else if(distance(elem.getPos(prop).getc(true), pos) < distance(
-    	         node.getPos(prop).getc(true), pos))
-    		 {
-    		 	return elem;
-    		 }
-       
-     }, flags);
-     return node;
+		 }
+    	 else
+		 {
+    		// calculate distance between given node and graph node (called elem)
+        	 
+    		// assign new closestNode if 
+    		 // A) no oldDist exists or 
+    		 // B) new dist is shorter than oldDist
+    		 if(closestNode === null)
+			 {
+    			 closestNode = elem;
+			 }
+    		 else
+			 {
+    			// 1) get distance between element and given node position
+        		 var dist = distance(elem.getPos(prop).getc(true), nodePos);
+        		 // 2) get distance between given node and last saved closestNode
+        		 var oldDist = distance(closestNode.getPos(prop).getc(true), nodePos);
+        		 
+        		 if(dist < oldDist)
+    			 {
+        			 closestNode = elem;
+    			 }
+			 }
+    		 
+		 }
+    	 
+     }, flags); // end of eachNode loop
+     return closestNode;
    }
     // end of change
   };

@@ -186,33 +186,7 @@ window.kinectComponent =
 				this.centerHighlightedNode();
 				break;
 			case 4:
-				// go back 1 level
-				
-				// node history contains the visited node ids in order of appearance
-								
-				var nodePath = this.rgraph.nodesInPath;
-				
-				// nodePath now contains an array of node ids from "0" node to current node
-				// to move up the path by one level, we need to center on the node that appears
-				// in the second to last position in this list
-				
-				// if no valid path longer than 1 node exists, do nothing
-				if(nodePath === undefined || nodePath.length < 2)
-					return;  
-				else
-				{   // we can safely assume nodePath contains at least two elements
-					// in this case, we want to select the node whose id is precursor to the last
-					// id in the current nodePath
-					
-					// example: 
-					// nodePath = ["0", "10", "101"]; we want to select node id "10"
-					// nodePath.length = 3, last element index is 2, index of "10" is 1
-					this.centerNodeWithId(nodePath[nodePath.length-2]);
-					
-					// DEBUG
-					//var tempNodeName = this.rgraph.graph.getNode(nodePath[nodePath.length-2]).name;
-					//console.log("moving up one level to node " + tempNodeName);
-				}
+				this.backOneLevel();
 				
 				
 				break;
@@ -447,6 +421,16 @@ window.kinectComponent =
 				var rightElbow = skeleton["elbowright"];
 				
 				var spineDepth = skeleton["spine"].z;
+				
+				if(spineDepth < 2.5)
+				{
+					this.centerHighlightedNode();
+				}
+				else if(spineDepth > 3.5)
+				{
+					this.backOneLevel();
+				}
+				
 				//console.log(spineDepth);
 				
 				// documentation of handConfig:
@@ -516,9 +500,9 @@ window.kinectComponent =
         		this.getNodeById("1").setPos(newPos);
         		
         		// set highlight to closest graph node
-        		//var closestNode = this.rgraph.graph.getClosestNodeToNode(this.getNodeById("1").getPos(), this.getNodeById("1"));
+        		var closestNode = $jit.Graph.Util.getClosestNodeToNode(this.rgraph.graph, this.getNodeById("1"));
         		//console.log("found closest node: " + closestNode);
-        		//this.setHighlightedNode(closestNode);
+        		this.setHighlightedNode(closestNode);
         		
         		this.rgraph.plot();
 				
@@ -545,6 +529,49 @@ window.kinectComponent =
 		radToDeg : function(radiansValue)
 		{
 			return radiansValue * 180 / Math.PI;
+		},
+		
+		gotoLevel : function(globalLevel)
+		{
+			if(typeof globalLevel !== "number") // needs to be a number
+				return;
+			
+			if(globalLevel > 2 || globalLevel < 0) // ... between 0 and 2
+				return;
+			
+			// globalLevel = 0,1,2
+			
+		},
+		
+		backOneLevel : function()
+		{
+			// go back 1 level
+			
+			// node history contains the visited node ids in order of appearance
+							
+			var nodePath = this.rgraph.nodesInPath;
+			
+			// nodePath now contains an array of node ids from "0" node to current node
+			// to move up the path by one level, we need to center on the node that appears
+			// in the second to last position in this list
+			
+			// if no valid path longer than 1 node exists, do nothing
+			if(nodePath === undefined || nodePath.length < 2)
+				return;  
+			else
+			{   // we can safely assume nodePath contains at least two elements
+				// in this case, we want to select the node whose id is precursor to the last
+				// id in the current nodePath
+				
+				// example: 
+				// nodePath = ["0", "10", "101"]; we want to select node id "10"
+				// nodePath.length = 3, last element index is 2, index of "10" is 1
+				this.centerNodeWithId(nodePath[nodePath.length-2]);
+				
+				// DEBUG
+				//var tempNodeName = this.rgraph.graph.getNode(nodePath[nodePath.length-2]).name;
+				//console.log("moving up one level to node " + tempNodeName);
+			}
 		}
 				
 }; 
