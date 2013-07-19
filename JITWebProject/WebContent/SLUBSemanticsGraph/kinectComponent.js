@@ -24,6 +24,8 @@ window.kinectComponent =
 		
 		handConfig : new Object(),
 		
+		zHistory : new Array(),
+		
 		// note: in function scope, "this" is the kinect component itself
 		//functions required for graph manipulation:
 
@@ -405,7 +407,8 @@ window.kinectComponent =
 			shoulderright			wristright
 			
 			 */
-			
+			if(this.rgraph.busy)
+				return;
 			
 			//console.log("dispatching hand movement");
 			for(var i = 0; i < skeletonData.length; i++)
@@ -420,16 +423,16 @@ window.kinectComponent =
 				var leftElbow = skeleton["elbowleft"];
 				var rightElbow = skeleton["elbowright"];
 				
-				var spineDepth = skeleton["spine"].z;
-				
-				if(spineDepth < 2.5)
-				{
-					this.centerHighlightedNode();
-				}
-				else if(spineDepth > 3.5)
-				{
-					this.backOneLevel();
-				}
+				this.checkInteractionZone(skeleton["spine"].z);
+//				
+//				if(spineDepth < 2.5)
+//				{
+//					this.centerHighlightedNode();
+//				}
+//				else if(spineDepth > 3.5)
+//				{
+//					this.backOneLevel();
+//				}
 				
 				//console.log(spineDepth);
 				
@@ -510,6 +513,161 @@ window.kinectComponent =
 			
 		},
 		
+		checkInteractionZone : function(currentDepth)
+		{
+	        /*
+	         * Kinect field of view is split into three interaction zones based on z-axis:
+	         * Far - a person is between 3 and 4 meters away from the sensor
+	         * Medium - a person is between 2 and 3 meters away from the sensor
+	         * Near - a person is closer than 2 meters
+	         * 
+	         * Each zone represents one graph level (graph levels are 0,1,2 / Far,Medium,Near).
+	         * 
+	         * ## Stepping into sublevels of the graph:
+	         * 
+	         * If the current level is 0 and the user is entering the medium range zone,
+	         * the current level should switch to 1 by centering the currently selected node (if there is one).
+	         * 
+	         * If the current level is 1 and the user is entering the near range zone, 
+	         * the current level should switch to 2 by centering the currently selected node (if there is one).
+	         * 
+	         * ## Stepping backwards, up the graph hierarchy:
+	         * 
+	         * If the current level is 1 and the user is entering the far range zone,
+	         * the current level should switch to 0 by centering the global root.
+	         * 
+	         * If the current level is 2 and the user is entering the medium range zone,
+	         * the current level should switch to 1 by going one step back in the node history (rgraph.nodesInPath property)
+	         */
+			
+			
+			// the currently centered node will give us the global level
+			var currentLevel = this.getGlobalLevel(this.getNodeById(this.rgraph.root));
+			// currentDepth is the distance of a person from the sensor in meters along the z axis
+			
+			var userEnteringFarZone = this.userInZone(currentDepth) === 0;
+			var userEnteringMediumZone = this.userInZone(currentDepth) === 1;
+			var userEnteringNearZone = this.userInZone(currentDepth) === 2;
+			
+			switch(currentLevel)
+			{
+				case 0:
+					if(userEnteringMediumZone)
+					{
+						this.centerHighlightedNode();
+					}
+					break;
+				case 1:
+					if(userEnteringFarZone)
+					{
+						this.backOneLevel();
+					}
+					else if(userEnteringNearZone)
+					{
+						this.centerHighlightedNode();
+					}
+					break;
+				case 2:
+					if(userEnteringMediumZone)
+					{
+						this.backOneLevel();
+					}
+					break;
+				default:
+					break;
+			}
+		},
+		
+		/**
+		 * Returns a number code representing an event whether a user has entered a new interaction zone.
+		 * @param userDistance - user depth index, i.e. a z-axis value expected in meters
+		 * @returns {Number} - a number code. -1 = no change, 0 = far zone, 1 = medium zone, 2 = near zone
+		 */
+		userInZone : function(userDistance)
+		{
+			// save last $zHistoryLength entries in zHistory
+			var zHistoryLength = 60;
+			
+			var userEnteringFarZone = false;
+			var userEnteringMediumZone = false;
+			var userEnteringNearZone = false;
+			
+			if(this.zHistory.length < zHistoryLength)
+			{
+				// when starting fresh, fill the history up with values
+				this.zHistory.push(userDistance);
+				return;
+			}
+			else
+			{
+				// if it's already full, shift by one and push the new distance
+				this.zHistory.shift();
+				this.zHistory.push(userDistance);
+			}
+			
+			// at this point, we will always have $zHistoryLength entries in the history
+			/*
+			 now we need to find out from which zone to which the user is going
+			 pseudocode:
+			 
+			 if(last $zHistoryLength values are between 3 and 4 meters and the new value is smaller than 3)
+			 	-> user entered medium zone (step into)
+			 	
+			 if(last $zHistoryLength values are between 2 and 3 meters and the new value is smaller than 2)
+			 	-> user entered near zone (step into)
+			 	
+			 if(last $zHistoryLength values are < 2 meters and the new value is larger than 2)
+			 	-> user entered medium zone (step back)
+			 	
+		 	if(last $zHistoryLength values are < 3 meters and the new value is larger than 3)
+			 	-> user entered far zone (step back)
+			 	
+			 NOTE: with this design, changing the interaction zone will be locked for as long as it takes for the
+			 	z history to fill up with values (e.g. with 60 entries, it should take about 2 seconds because the kinect sends at 30 FPS)
+			*/
+			
+			for(var i = 0; i < zHistoryLength; i++)
+			{
+				var value = this.zHistory[i];
+				if(3 < value && value < 4 && userDistance < 3)
+				{
+					// user stepping *into* medium zone
+					userEnteringFarZone = false;
+					userEnteringMediumZone = true;
+					userEnteringNearZone = false;
+				}
+				else if(2 < value && value < 3 && userDistance < 2)
+				{
+					// user stepping *into* near zone
+					userEnteringFarZone = false;
+					userEnteringMediumZone = false;
+					userEnteringNearZone = true;
+				}
+				else if(value < 2 && userDistance > 2)
+				{
+					// user stepping *back to* medium zone
+					userEnteringFarZone = false;
+					userEnteringMediumZone = true;
+					userEnteringNearZone = false;
+				}
+				else if(2 < value && value < 3 && userDistance > 3)
+				{
+					// user stepping *back to* far zone
+					userEnteringFarZone = true;
+					userEnteringMediumZone = false;
+					userEnteringNearZone = false;
+				}
+			}
+			
+			// now return a number code based on which zone the user entered
+			if(userEnteringFarZone) return 0;
+			if(userEnteringMediumZone) return 1;
+			if(userEnteringNearZone) return 2;
+			
+			return -1;
+			
+		},
+		
 		clampToRange : function(value, maxDistance)
 		{
 			
@@ -531,17 +689,6 @@ window.kinectComponent =
 			return radiansValue * 180 / Math.PI;
 		},
 		
-		gotoLevel : function(globalLevel)
-		{
-			if(typeof globalLevel !== "number") // needs to be a number
-				return;
-			
-			if(globalLevel > 2 || globalLevel < 0) // ... between 0 and 2
-				return;
-			
-			// globalLevel = 0,1,2
-			
-		},
 		
 		backOneLevel : function()
 		{
