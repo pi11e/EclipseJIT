@@ -29,6 +29,22 @@ window.kinectComponent =
 		// note: in function scope, "this" is the kinect component itself
 		//functions required for graph manipulation:
 
+		/**
+		 * Returns the currently highlighted node back to its regular state (including the hidden label 
+		 * if the node is below level 1).
+		 */
+		turnOffHighlightedNode : function()
+		{
+			if(this.highlightedNode !== undefined && this.highlightedNode !== null)
+			{
+				this.highlightedNode.data.isHighlighted = false;
+				// *new feature: hide label of unselected node - exclude global levels 0 and 1
+				// plus: never hide the label of the current root
+				if(!this.highlightedNode.getAdjacency(0) && this.highlightedNode.id !== this.rgraph.root)
+					this.rgraph.labels.getLabel(this.highlightedNode.id).hidden = true;
+			}
+		},
+		
 		//- node highlighting 
 //				(visually emphasizing one node, allowing clear distinction from other nodes)
 		setHighlightedNode : function(node)
@@ -61,16 +77,10 @@ window.kinectComponent =
 			// if given node isn't already highlighted,
 			if(this.highlightedNode !== node) // note: this.highlightedNode may be undefined at this point if no previous highlighting has happened
 			{
-				console.log("setting highlight for node " + node.name); // log the new node
+				//console.log("setting highlight for node " + node.name); // log the new node
 				
 				// turn currently highlighted node "off"
-				if(this.highlightedNode !== undefined)
-				{
-					this.highlightedNode.data.isHighlighted = false;
-					// *new feature: hide label of unselected node - exclude global levels 0 and 1
-					if(!this.highlightedNode.getAdjacency(0))
-						this.rgraph.labels.getLabel(this.highlightedNode.id).hidden = true;
-				}
+				this.turnOffHighlightedNode();
 				
 				// set new highlighted node
 				this.highlightedNode = node; 				
@@ -110,6 +120,8 @@ window.kinectComponent =
 			
 			if(this.isNode(this.rgraph.graph.getNode(nodeId)))
 			{
+				this.clearInteractionArtifacts();
+				
 				// the node we're looking for does indeed exist
 				this.rgraph.onClick(nodeId, {  
 					 hideLabels: false  // keep showing labels during transition
@@ -126,7 +138,6 @@ window.kinectComponent =
 		{
 			if(this.isNode(this.highlightedNode))
 			{
-				console.log("centering highlighted node " + this.highlightedNode.name);
 				this.centerNodeWithId(this.highlightedNode.id);
 			}
 		},
@@ -154,8 +165,13 @@ window.kinectComponent =
 			return this.rgraph.graph.getNode(nodeId);
 		},
 		
+		/**
+		 * @unused
+		 */
 		getNodeByName : function(nodeName)
 		{
+			// this is more of a useful debugging tool to access from within the chrome console
+			
 			var nodeFound = null;
 			this.rgraph.graph.eachNode(function(node)
 					{
@@ -276,7 +292,7 @@ window.kinectComponent =
 						}
 					});
 			
-			//console.log("next node to highlight = " + highlightedNodeNeighborIndexInSubnodes);
+
 			
 
 			if(countBackwards)
@@ -302,7 +318,6 @@ window.kinectComponent =
 			
 			
 			this.setHighlightedNode(subnodes[highlightedNodeNeighborIndexInSubnodes]);
-			//console.log("subnodes: " + subnodes);
 			
 			// - if no node is highlighted, highlight the first child of the current root
 			// - if a node has been highlighted, highlight the next child (relative to currently highlighted child) of the current root
@@ -328,6 +343,12 @@ window.kinectComponent =
 		 */
 		getGlobalLevel: function(node)
 		{
+			if(typeof node === 'string')
+			{
+				// check if node could be retrieved by interpreting it as an id
+				node = this.getNodeById(node);
+			}
+			
 			if(this.isNode(node))
 			{
 				if(node.id === "0")
@@ -378,7 +399,7 @@ window.kinectComponent =
 		 */
 		dispatchJSON : function(data)
 		{
-			//console.log(data);
+
 			if(data === "LeftHandSwipeRightGesture")
 			{
 				this.highlightNextNode();
@@ -410,31 +431,19 @@ window.kinectComponent =
 			if(this.rgraph.busy)
 				return;
 			
-			//console.log("dispatching hand movement");
+
 			for(var i = 0; i < skeletonData.length; i++)
 			{
 				var skeleton = skeletonData[i];
 				
 				var leftHand = skeleton["handleft"];
 				var rightHand = skeleton["handright"];
-				var leftShoulder = skeleton["shoulderleft"];
-				var rightShoulder = skeleton["shoulderright"];
 				
 				var leftElbow = skeleton["elbowleft"];
 				var rightElbow = skeleton["elbowright"];
 				
+				// handles changes in the interaction zone for this user
 				this.checkInteractionZone(skeleton["spine"].z);
-//				
-//				if(spineDepth < 2.5)
-//				{
-//					this.centerHighlightedNode();
-//				}
-//				else if(spineDepth > 3.5)
-//				{
-//					this.backOneLevel();
-//				}
-				
-				//console.log(spineDepth);
 				
 				// documentation of handConfig:
 				// this.handConfig.[left|right] = {active: [true|false], gripped: [true|false]}
@@ -476,6 +485,15 @@ window.kinectComponent =
 					return;
 				}
 				
+				// ########## add hand avatar node
+				
+				// hand avatar node should only be displayed when in global levels 0 or 1
+				if(this.getGlobalLevel(this.getNodeById(this.rgraph.root)) > 1)
+				{
+					this.rgraph.graph.removeNode(this.getNodeById("1"));
+					this.rgraph.plot();
+					return;
+				}
 				
         		// radius for the new position, i.e. the polar norm, can be specified here. 
         		// the default value for the first node level, depending on zoom level, is 120 (i.e. visible subnodes will have a norm of 120)
@@ -489,6 +507,7 @@ window.kinectComponent =
         			this.getNodeById("1").setPos(new $jit.Polar(0,radius));
     			}
         		
+        		
 
         		// adjust position of the hand node
         		var oldTheta = this.getNodeById("1").getPos().theta;
@@ -496,7 +515,7 @@ window.kinectComponent =
         		
         		var baseSpeed = 0.1;
         		var newTheta = oldTheta + baseSpeed * accelerationFactor;
-        		console.log("acceleration: " + accelerationFactor + "; newTheta: " + newTheta);
+        		//console.log("acceleration: " + accelerationFactor + "; newTheta: " + newTheta);
         		
         		// Polar(theta, rho) where theta is the angle and rho the norm (i.e. radius)
         		var newPos = new $jit.Polar(newTheta, radius);  
@@ -548,6 +567,8 @@ window.kinectComponent =
 			var userEnteringFarZone = this.userInZone(currentDepth) === 0;
 			var userEnteringMediumZone = this.userInZone(currentDepth) === 1;
 			var userEnteringNearZone = this.userInZone(currentDepth) === 2;
+			
+
 			
 			switch(currentLevel)
 			{
@@ -715,10 +736,23 @@ window.kinectComponent =
 				// nodePath.length = 3, last element index is 2, index of "10" is 1
 				this.centerNodeWithId(nodePath[nodePath.length-2]);
 				
-				// DEBUG
-				//var tempNodeName = this.rgraph.graph.getNode(nodePath[nodePath.length-2]).name;
-				//console.log("moving up one level to node " + tempNodeName);
 			}
+		},
+		
+		/**
+		 * Removes the hand avatar node and resets the highlighted node to null.
+		 */
+		clearInteractionArtifacts : function()
+		{
+
+			// hide node (hand avatar node has id 1)
+			this.rgraph.graph.removeNode("1");
+			
+			// reset highlightedNode
+			this.turnOffHighlightedNode();
+			this.highlightedNode = null;
+			
+			//this.rgraph.plot();
 		}
 				
 }; 
@@ -758,7 +792,7 @@ var pushImagesToGallery = function(imageURLs, node)
 			imageURL = imageURL.substring(0, imageURL.indexOf('jpg')+3);
 		}
 		
-		if(imageURL.match(/jpg|png$/) !== null) // if its a valid image url
+		if(imageURL.match(/jpg|png$/) !== null) // if its a valid image url, i.e. they have a png or jpg at the end
 		{
 			// construct a thumbnail path by exchanging "fotos" for "thumbs" in the path like so:
 			// sample image URL:
@@ -766,7 +800,8 @@ var pushImagesToGallery = function(imageURLs, node)
 			// sample thumb URL for same image:
 			// http://fotothek.slub-dresden.de/thumbs/df/ps/0006000/df_ps_0006095.jpg
 			
-			
+			// note: it's possible there is no "fotos" to replace, which happens with the 6 top level images
+			// that are loaded from the server's data/toplevelimages folder
 			var thumbnailURL = imageURL.replace("fotos", "thumbs");
 			
 			data.push({thumb: thumbnailURL, image: imageURL});
@@ -774,7 +809,6 @@ var pushImagesToGallery = function(imageURLs, node)
 		
 	}	
 	       
-	console.log(data);
 	
 	// a number of flags to control gallery behavior
 	var inFullscreenMode = false; // if the user is viewing images in fullscreen, stop slideshow
@@ -826,11 +860,9 @@ var getImageURLsForSubnodesOf = function(node)
 		// get image URLs for each of the (currently six) filter nodes
 		// ... these images should illustrate the filter node (e.g. "nach Sammlung", "nach Thema" etc.)
 		
-		// get a number of random images for each tag
-		var amountOfImagesPerTag = 1;
 		
 		/*
-		 * we will probably need an xquery shuffle function for that. here's one:
+		 * possibly use an xquery shuffle function:
 		 * 
 		 	declare function local:shuffle($seq as item()*)
 			{
@@ -839,16 +871,14 @@ var getImageURLsForSubnodesOf = function(node)
 			};
 		 */
 		
+		// no shuffle function needed: image selection can be found in /data/toplevelimages/$nodename
+		
 		// iterate over each filter node
-		for(var key in nodeTagMap) // see http://stackoverflow.com/questions/684672/loop-through-javascript-object
+		for(var key in nodeTagMap) 
 		{
-			// make sure the key exists
-			if(nodeTagMap.hasOwnProperty(key))
-			{
-				filterTag = nodeTagMap[key];
-				// construct a query that asks for $amountOfImagesPerTag image URLs from a (random?) object that has the given tag
-				window.imageURLs.push("http://www.deutschefotothek.de/bilder/dflogo.png");
-			}
+			// each key represents one filter name
+			var imgName = "/data/toplevelimages/" + key;
+			window.imageURLs.push(imgName);
 		}
 	}
 	else if(selectedNodeGlobalLevel === 1)
@@ -868,7 +898,7 @@ var getImageURLsForSubnodesOf = function(node)
 			{
 				// find a random image from the result set behind that subnode
 				filterValue = subnode.name;
-				console.log("node name = " + node.name + "; filterTag = " + filterTag + "; filterValue = " + filterValue);
+				//console.log("node name = " + node.name + "; filterTag = " + filterTag + "; filterValue = " + filterValue);
 				
 				// this returns all image URLs for the given filter tag and value
 				//query = "XQUERY for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return ($x//a8470//text(), ';')";
@@ -926,7 +956,7 @@ var getImageURLsForSubnodesOf = function(node)
 		var callback = function(data)
 		{
 			window.imageURLs = data.split(";");
-			//console.log(imageURLs);
+
 			
 		};
 
@@ -939,7 +969,7 @@ var getImageURLsForSubnodesOf = function(node)
 		return null;
 	}
 	
-	console.log(window.imageURLs.length);
+	
 	// every time we get new image URLs, we want them to be displayed in the gallery
 	pushImagesToGallery(window.imageURLs, node);
 };
