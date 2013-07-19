@@ -98,6 +98,10 @@ window.kinectComponent =
 					this.rgraph.labels.getLabel(node.id).hidden = false;
 				
 				
+				// center image corresponding to new highlighted node
+				var imgIndex = node.data.imgIndex;
+				Galleria.get(0).show(imgIndex !== undefined ? imgIndex : 0);
+				
 				
 			}
 		},
@@ -297,8 +301,6 @@ window.kinectComponent =
 
 			if(countBackwards)
 			{
-				// center previous image in gallery
-				Galleria.get(0).prev(); // this gets the (single) Galleria instance and shows the previous image
 				
 				// it is possible the index of the "previous" node underruns the first subnodes index, i.e. is smaller than zero
 				// - in this case, we start again from the back of the array.
@@ -307,8 +309,6 @@ window.kinectComponent =
 			}
 			else
 			{
-				// center next image in gallery
-				Galleria.get(0).next(); // this gets the (single) Galleria instance and shows the next image
 				
 				// it is possible the index of the "next" node overruns the last subnodes index, i.e. is larger than subnodes.length-1
 				// - in this case, we start again from the beginning of the array.
@@ -816,9 +816,9 @@ var pushImagesToGallery = function(imageURLs, node)
 	 
 	
 	var autoplayValue = 3000; // default: slideshow with 3 seconds per image (= 3000 ms)
-	if(inFullscreenMode || selectedNodeGlobalLevel < 3)
+	if(inFullscreenMode || selectedNodeGlobalLevel < 2)
 	{
-		autoplayValue = false; // no slideshow when in levels 1 or 2 or when displaying a full screen image
+		autoplayValue = false; // no slideshow when in levels 0 or 1 or when displaying a full screen image
 	}
 	else if(userChangedImage)
 	{
@@ -826,10 +826,13 @@ var pushImagesToGallery = function(imageURLs, node)
 	}
 	// for possible options, see http://galleria.io/docs/options/
 	
+	$('#leftcol').height(window.innerHeight*0.5);
+	
 	Galleria.run('#galleria', 
 		{
 			dataSource: data,
-			height: $('#galleria').height,
+			height: window.innerHeight*0.5,
+			width: window.innerWidth,
 			autoplay : autoplayValue,
 			pauseOnInteraction : inFullscreenMode
 		});
@@ -872,14 +875,24 @@ var getImageURLsForSubnodesOf = function(node)
 		 */
 		
 		// no shuffle function needed: image selection can be found in /data/toplevelimages/$nodename
-		
+		var subnodeIndex = 0;
 		// iterate over each filter node
-		for(var key in nodeTagMap) 
+		node.eachSubnode(function(subnode)
 		{
+			subnode.data.imgIndex = subnodeIndex++; // the index for this image in galleria 
+			var name = subnode.name;
+			if(name === "Länder")
+			{
+				name = "Laender";
+			}
+			
 			// each key represents one filter name
-			var imgName = "/data/toplevelimages/" + key;
+			var imgName = "http://localhost:8080/JITWebProject/data/toplevelimages/" + name + ".png";
+			
 			window.imageURLs.push(imgName);
-		}
+			
+			
+		});
 	}
 	else if(selectedNodeGlobalLevel === 1)
 	{

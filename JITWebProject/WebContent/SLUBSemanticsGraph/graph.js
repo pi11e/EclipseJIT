@@ -184,9 +184,14 @@ avgl.Graph.prototype.init = function(data) {
 };
 
 avgl.Graph.prototype._onClick = function(node, event) {
-  if (typeof node != 'object') {
+  if (typeof node != 'object') 
+  {
     node = this._getNode(node);
   }
+  
+  if(node === undefined)
+	  return;
+  
   if (node.id == this.rgraph.root) {
     return;
   }

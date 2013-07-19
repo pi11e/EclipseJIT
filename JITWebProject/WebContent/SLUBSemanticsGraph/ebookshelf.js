@@ -14,75 +14,14 @@ var regularColor = "#278";
 var highlightedColor = "#F90";
 // node color for leaf nodes
 var leafNodeRegularColor = "#6495ED";
-
-console.log('before');
-setTimeout(function()
-{
-	
-	
-	var infovisDiv = document.getElementById("ns-avgl-facetgraph-infovis");
-	
-	/*
-	infovisDiv looks like this:
-	-----
-	<div id="ns-avgl-facetgraph-infovis">
-		<div id="ns-avgl-facetgraph-infovis-canvaswidget" ...>
-			<canvas id="ns-avgl-facetgraph-infovis-canvas" ...></canvas>
-			<div id="ns-avgl-facetgraph-infovis-label" ...>
-				... labels ... (a bunch of divs)
-			</div>
-		</div>
-	</div>
-	-----
-	... BUT ONLY AFTER execution of the graph initialization and injection code, 
-	which includes the starting animation.
-	Solution: Either force this portion to wait (see setTimeout method) until the animation
-	is finished OR set JIT/Rgraph to not play the animation when just starting.
-	*/
-
-	//console.log(infovisDiv);
-	//console.log(canvasElement.getContext("2d"));
-
-	var canvas = document.getElementById("ns-avgl-facetgraph-infovis-canvas");
-	var context = canvas.getContext("2d");
-	var rgraph = this.kinectComponent.rgraph;
-	
-	console.log("this = " + this); // this = [object Window]
-	console.log("this.kinectComponent.rgraph = " + rgraph);
-	
-//	var someId = 840468; // node name "Beugungsintegral"
-//	var someNode = rgraph.graph.getNode(someId);
+//
+//console.log('initializing canvas... ');
+//setTimeout(function()
+//{
 //	
-//	console.log("getSomeNodeId(" + someId + ") = " + someNode + " with name " + someNode.name);
-//	console.log(window.hasOwnProperty('$jit'));
-	
-	// initial graph setup:
-	// WARNING: when using graph_data.js, this is *only* done for the global root node, i.e. all nodes in the initial dataset. So no effect, really. Quite useless.
-	// 
-	// - setup with highlighting color
-	// - hide all labels deeper than 1 (global root has depth 0)
-	// http://philogb.github.io/jit/static/v20/Docs/files/Graph/Graph-js.html#Graph.Util.eachNode
-	this.kinectComponent.rgraph.graph.eachNode(function(node)
-		{
-			// perform this for all nodes in the graph
-			node.data.regularColor = regularColor;
-			node.data.highlightColor = highlightedColor;
-			node.data.isHighlighted = false;
-			
-			if(node._depth > 1)
-			{
-				// set its label to be hidden
-				window.kinectComponent.rgraph.labels.getLabel(node.id).hidden = true;
-			}
-		}
-	);
-	
-	
-	
-	
-	
-    console.log('after');
-},500);
+//	
+//    console.log('done.');
+//},500);
 
 
 var promptQueryAndExecute = function()
@@ -215,7 +154,7 @@ var createFilterLevel = function (rootNode)
 	 * a99d2	11.260	APS-Katalog					"nach Katalog"
 	 * a55b2	52.904	"Ebene 2" bzw. Thema		"nach Thema"
 	 */
-	var filterNames = ['nach Epoche', 'nach Sammlung', 'nach Gattung', 'nach Schlagwort', 'nach Katalog', 'nach Thema'];
+	var filterNames = ['Fotografen', 'Epochen', 'Kollektionen', 'Gattungen', 'Länder', 'Themen'];
 	var filterTags = ['a55b3','a99d3','a5220','a55df','a99d2','a55b2'];
 	
 	
@@ -271,6 +210,8 @@ var createFilterLevel = function (rootNode)
 	
 	// get image urls for global root once (will trigger gallery population)
 	getImageURLsForSubnodesOf(window.kinectComponent.getNodeById('0'));
+	
+	
 };
 
 var hideLabelsDeeperThanLevel = function(level)
