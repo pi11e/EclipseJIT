@@ -60,9 +60,6 @@ var queryDB = function(queryString, callback, callAsync)
 };
 
 /**
- * @unused
- */
-/**
  * For a given tag, finds all distinct values found in the database delimited by semicolon.
  * @param tag - the tag to be evaluated for distinct values, e.g. 'a99d3'
  * @param callback - the callback function which is used to manipulate the returned data 
@@ -158,7 +155,7 @@ var createFilterLevel = function (rootNode)
 	 * a55b2	52.904	"Ebene 2" bzw. Thema		"nach Thema"
 	 */
 	var filterNames = ['Fotografen', 'Epochen', 'Kollektionen', 'Gattungen', 'Länder', 'Themen'];
-	var filterTags = ['a8450/a8490','a5064/a5071','a55df','a5220','a5108/a511a','a55b1'];
+	var filterTags = ['a55b3','a99d3','a5220','a55df','a99d2','a55b2'];
 	
 	
 	// for orientation:
@@ -172,26 +169,35 @@ var createFilterLevel = function (rootNode)
 	// create one node for each of the given filter names and append it to the given root node
 	addNodesWithNamesToRoot(filterNames, rootNode);
 	
-		
-	// for each tag, get all distinct values, count the amount of subnodes for these and only take the top 12
+	var blacklist_sammlungen = ["KUR-Peter", "APS", "MI-Retro", "Grasser"];
+	var blacklist_schlagwort = ["Bildnis", "Portrait", "Gebirgslandschaften", "Hügellandschaften", "Sonstiges"];
+	var blacklist_thema = ["Ortskatalog systematisch", "Schlagwort-Katalog", "Volkskunde", "Geschichte", "Volksbildung | Pädagogik", "Feinwerktechnik, Optik", "Grundlagen der Technik, Wissenschaft und Kultur", "Verbrauchsgüterindustrie"];
+	
+	var blacklist = new Object();
+	blacklist["nach Sammlung"] = blacklist_sammlungen;
+	blacklist["nach Schlagwort"] = blacklist_schlagwort;
+	blacklist["nach Thema"] = blacklist_thema;
+	
+	
+	//Konzept: for each tag, get all distinct values, count the amount of subnodes for these and only take the top 12
 	for(var i = 0; i < filterNames.length; i++)
 	{
 		
 		var rootNode = window.kinectComponent.getNodeByName(filterNames[i]);
 		nodeTagMap[filterNames[i]] = filterTags[i]; // maps each node name to a tag, e.g. persists the struture explained in the first comments section of this function
-		
-		var queryForFilterName = getQueryForFilterName(filterNames[i]);
-		console.log(queryForFilterName);
-		
-		var callback = function(data)
-		{
-			var tempData = data.split(';');
-			addNodesWithNamesToRoot(tempData, rootNode);
-		};
+		getDistinctValuesForTag(filterTags[i], function(data)
+				{
+					var tempData = data.split(';'); 
+//					console.log(tempData);
+//					console.log("#######");
 
-		/** creates level 2 **/
-		queryDB(queryForFilterName, callback, false);
-		
+						
+/** creates level 2 **/
+					// 2. now with all the distinct values as node names, add subnodes to each filter node
+					addNodesWithNamesToRoot(tempData, rootNode);
+								
+					
+				}, blacklist[filterNames[i]]);
 	}
 	
 	// Now, all nodes for levels 0-1-2 have been added.
@@ -356,87 +362,4 @@ var updateSelectionLabelWithText = function(text)
 		text = text.slice(4);
 	}
     selection.innerHTML = text;
-};
-
-/**
- * Gets an XQUERY expression for the given filter name.
- */ 
-var getQueryForFilterName = function(filterName)
-{
-	var maximumAmount = maximumNodes;
-	//TODO: queries für Länder und Themen filter fertig machen, dann testen!
-	
-	var query = null;
-	switch(filterName)
-	{
-		case "Fotografen":
-			// passt - explizite whitelist mit 11 einträgen im query
-			query = "XQUERY declare namespace functx = 'http://www.functx.com'; declare function functx:is-value-in-sequence( $value as xs:anyAtomicType? , $seq as xs:anyAtomicType* )  as xs:boolean { $value = $seq } ; let $filter := ('Blossfeldt, Karl', 'Donadini, Ermenegildo Antonio', 'Lübeck, Oswald', 'Peter, Richard jun.', 'John, Paul W.', 'Danigel, Gerd', 'Helbig, Konrad', 'Aufsberg, Lala', 'Peter, Richard sen.', 'Eschen, Fritz', 'Borchert, Christian') for $x in distinct-values(//obj//a8450/a8490/text()) where (functx:is-value-in-sequence($x, $filter)) return ($x, ';') ";
-			break;
-		case "Epochen":
-			
-			var childNodes = "XQUERY let $min := 1900 let $max := 2000 for $x in distinct-values(//obj/a5064/a5071/text()) where xs:integer($x) < $max and xs:integer($x) > $min  order by xs:integer($x) return ($x, ';')";
-			// Manuelle Jahrhunderte; später beim Hinzufügen nach min/max gehen, s. Notiz
-			query = "XQUERY let $epoch := ('21. Jh.', '20. Jh.', '19. Jh.', '18. Jh.', '17. Jh.', '16. Jh.', '15. Jh.', '14. Jh.', '13. Jh.', 'älter') for $x in $epoch return ($x, ';')";
-			break;
-		case "Kollektionen":
-			// zwei Kollektionen: Pöppelmann und Wagner; beide haben Unterkollektionen, Filterknoten sollen "M.D. Pöppelmann" und "Richard Wagner" heißen
-			// query bringt alle unterkollektionen, also z.B.
-			/*
-			 * 
-			 * Portfolio-Richard-Wagner-Pläne-und-Städtebilder 
- 				Portfolio-Richard-Wagner-missing 
- 				Portfolio-Pöppelmann-Person 
- 				Portfolio-Pöppelmann-Varia 
-			 */
-			var childNodes = "XQUERY for $x in distinct-values(//obj//a55df/text()) where starts-with($x,'Portfolio-Richard-Wagner') or starts-with($x, 'Portfolio-Pöppelmann') return ($x, ';') ";
-			// Manuelle Portfolio-Knoten, später beim Hinzufügen der Kindknoten nach obigem Query gehen, s. Notiz
-			query = "XQUERY for $x in ('M.D. Pöppelmann', 'Richard Wagner') return ($x, ';')";
-			break;
-		case "Gattungen":
-			// passt - explizite whitelist mit 7 einträgen im query; achtung: zwei knoten Druckgraphik und Druckgrafik, evtl. vereinen
-			query = "XQUERY declare namespace functx = 'http://www.functx.com'; declare function functx:is-value-in-sequence( $value as xs:anyAtomicType? , $seq as xs:anyAtomicType* )  as xs:boolean { $value = $seq } ; let $filter := ('Druckgraphik', 'Druckgrafik', 'Kunsthandwerk', 'Bauskulptur', 'Möbeldesign', 'Malerei', 'Skulptur', 'Architektur') for $x in distinct-values(//obj//a5220/text()) where (functx:is-value-in-sequence($x, $filter)) return ($x, ';')";
-			break;
-		case "Länder":
-			/*
-			 * Naiver query:
-			 *  let $part1 := for $x in (//obj/aob26/a260a) return $x
-			 *  let $part2 := for $x in (//obj/a5108/a511a) return $x
-			 *  return (distinct-values($part1), distinct-values($part2))
-			 *  
-			 *  Enthält Dopplungen, z.B. "IndienIndien" oder "DeutschlandDeutschlandDeutschland". Doppelte Vorkommnisse werden per Vergleich
-			 *  1. Worthälfte != 2. Worthälfte entfernt; da "DeutschlandDeutschlandDeutschland" das einzige dreifach vorkommende Land ist, wird es
-			 *  manuell gefiltert:
-			 *   
-			 *  let $part1 := for $x in (//obj/aob26/a260a) return $x
-			 *  let $part2 := for $x in (//obj/a5108/a511a) return $x
-			 *  let $sum := ($part1, $part2)
-			 *  for $x in distinct-values($sum) where substring($x, 1, string-length($x) div 2)!=substring($x, string-length($x) div 2 + 1) and string-length($x) > 2 and $x != 'DeutschlandDeutschlandDeutschland' return $x
-			 *  ... dauert rund 2876ms
-			 *  ... liefert 73 Treffer?
-			 *  
-			 *  let $part1 := for $x in (//obj/aob26/a260a) return $x 
-			 *  let $part2 := for $x in (//obj/a5108/a511a) return $x 
-			 *  let $sum := ($part1, $part2) 
-			 *  for $x in distinct-values($sum) where substring($x, 1, string-length($x) div 2)!=substring($x, string-length($x) div 2 + 1) and string-length($x) > 2 and $x != 'DeutschlandDeutschlandDeutschland' order by count(index-of($sum, $x)) descending return ($x, ' ',  count(index-of($sum, $x)),'&#xa;')
-			 *  ... wie oben, nur nach Unterknoten geordnet
-			 *  
-			 *  let $part1 := for $x in (//obj/aob26/a260a) return $x 
-			 *  let $part2 := for $x in (//obj/a5108/a511a) return $x 
-			 *  let $sum := ($part1, $part2) 
-			 *  let $result := for $x in distinct-values($sum) where substring($x, 1, string-length($x) div 2)!=substring($x, string-length($x) div 2 + 1) and string-length($x) > 2 and $x != 'DeutschlandDeutschlandDeutschland' order by count(index-of($sum, $x)) descending return ($x)
-			 *  for $entry in subsequence($result, 1, 12) return ($entry, ';')
-			 *  ... wie oben, nur die ersten $maximumAmount knoten mit ';' delimiter
-			 */
-			query = "XQUERY let $part1 := for $x in (//obj/aob26/a260a) return $x let $part2 := for $x in (//obj/a5108/a511a) return $x let $sum := ($part1, $part2) let $result := for $x in distinct-values($sum) where substring($x, 1, string-length($x) div 2)!=substring($x, string-length($x) div 2 + 1) and string-length($x) > 2 and $x != 'DeutschlandDeutschlandDeutschland' order by count(index-of($sum, $x)) descending return ($x) for $entry in subsequence($result, 1, "+maximumAmount+") return ($entry, ';')";
-			break;
-		case "Themen":
-			// query removes "Verschiedenes" as well as very long items, such as "Geschäfte | Gaststätten | Hotels"; afterwards takes the top $maximumAmount by count of their children
-			query = "XQUERY let $result := for $x in distinct-values(//obj//aob00/a55b3) where string-length($x) < 20 and $x != 'Verschiedenes' order by count(//obj/aob00[a55b3=$x]) descending return $x for $entry in subsequence($result, 1, "+maximumAmount+") return ($entry, ';')";
-			break;
-		default:
-			break;
-	}
-	
-	return query;
 };
