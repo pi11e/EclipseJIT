@@ -23,6 +23,8 @@ var leafNodeRegularColor = "#6495ED";
 //    console.log('done.');
 //},500);
 
+var filterNames = ['Fotografen', 'Epochen', 'Kollektionen', 'Gattungen', 'Länder', 'Themen'];
+
 
 var promptQueryAndExecute = function()
 {
@@ -157,7 +159,7 @@ var createFilterLevel = function (rootNode)
 	 * a99d2	11.260	APS-Katalog					"nach Katalog"
 	 * a55b2	52.904	"Ebene 2" bzw. Thema		"nach Thema"
 	 */
-	var filterNames = ['Fotografen', 'Epochen', 'Kollektionen', 'Gattungen', 'Länder', 'Themen'];
+	
 	var filterTags = ['a8450/a8490','a5064/a5071','a55df','a5220','a5108/a511a','a55b1'];
 	
 	
@@ -180,8 +182,7 @@ var createFilterLevel = function (rootNode)
 		var rootNode = window.kinectComponent.getNodeByName(filterNames[i]);
 		nodeTagMap[filterNames[i]] = filterTags[i]; // maps each node name to a tag, e.g. persists the struture explained in the first comments section of this function
 		
-		var queryForFilterName = getQueryForFilterName(filterNames[i]);
-		console.log(queryForFilterName);
+		var levelOneChildNodesQuery = getChildNodesForLevelOne(filterNames[i]);
 		
 		var callback = function(data)
 		{
@@ -190,7 +191,7 @@ var createFilterLevel = function (rootNode)
 		};
 
 		/** creates level 2 **/
-		queryDB(queryForFilterName, callback, false);
+		queryDB(levelOneChildNodesQuery, callback, false);
 		
 	}
 	
@@ -252,6 +253,8 @@ var addNodesWithNamesToRoot = function(nodeNames, rootNode)
 			
 		}
 
+		
+		
 		var newNode = {
 				   id:		Math.ceil(Math.random()*100000).toString(),
 				   name:	nodeName,
@@ -265,7 +268,20 @@ var addNodesWithNamesToRoot = function(nodeNames, rootNode)
 				
 		   }; // end of newNode
 		
-		addChildCountToNode(newNode);
+		// When a level two node is added, it should know how to get its children's image URLs.
+		// 1. Find out whether the currently added node is a level two node. This can be done by finding out whether this node's parent node (the rootNode parameter in this method) is contained in the filterNodes list.
+		// 2. Lookup the childNodes query
+		// 3. Store it in the data.childNodeQuery property
+		if(jQuery.inArray(rootNode.name, filterNames) !== -1) // meaning rootNode.name IS in the filterNames array
+		{
+			// submit this query to find all child node images
+			newNode.data.childImageQuery = getImageQueryForLevelTwoNode(rootNode.name, nodeName);
+			// submit this query to find one representative image for this node
+			newNode.data.ownImageQuery = getRandomImageQueryForLevelTwoNode(rootNode.name, nodeName);
+		}
+		
+		// disable child counts
+//		addChildCountToNode(newNode);
 		
 	    rgraph.graph.addAdjacence(rootNode, newNode);
 	    
@@ -279,6 +295,9 @@ var addNodesWithNamesToRoot = function(nodeNames, rootNode)
     
 };
 
+/**
+ * @unused
+ */
 var addChildCountToNode = function(node)
 {
 	if(window.quickDraw) // do not add child count if the quick draw flag is set (because this takes quite some time)
@@ -361,21 +380,39 @@ var updateSelectionLabelWithText = function(text)
 /**
  * Gets an XQUERY expression for the given filter name.
  */ 
-var getQueryForFilterName = function(filterName)
+var getChildNodesForLevelOne = function(levelOneNodeName)
 {
 	var maximumAmount = maximumNodes;
-	//TODO: queries für Länder und Themen filter fertig machen, dann testen!
-	
+
 	var query = null;
-	switch(filterName)
+	switch(levelOneNodeName)
 	{
+		/*
+		 * Note: For the more complex constructed queries, image url retrieval is non-trivial.
+		 * 
+		 * If a set of subnodes is based on a single path, that path can be used to resolve the image URLs. 
+		 * This is easy for the following filter nodes: 
+		 * 	'Fotografen' //obj//a8450/a8490/text() 
+		 * 	'Gattungen' //obj//a5220/text()
+		 * 	'Themen' //obj//aob00/a55b3/text()
+		 * 
+		 * For the filter nodes 'Epochen', 'Kollektionen' and 'Länder', this gets more complicated.
+		 * 	'Epochen' has completely arbitrarily constructed subnodes made of a list of centuries. Its childnodes actually represent specific years which
+		 * 		should be grouped by a minimum and maximum value to map them to a century node. This means each century node should know how to retrieve
+		 * 		its child nodes so it can use this information to retrieve all child node's image urls.
+		 * 	The same is true for Kollektionen and Länder nodes, as they are constructed in a similar manner.
+		 * 
+		 * Approach:
+		 * Attach to each level one node the query to get its level two child nodes. Use this query to retrieve the image and thumbnail URLs. 
+		 */
+	
 		case "Fotografen":
 			// passt - explizite whitelist mit 11 einträgen im query
 			query = "XQUERY declare namespace functx = 'http://www.functx.com'; declare function functx:is-value-in-sequence( $value as xs:anyAtomicType? , $seq as xs:anyAtomicType* )  as xs:boolean { $value = $seq } ; let $filter := ('Blossfeldt, Karl', 'Donadini, Ermenegildo Antonio', 'Lübeck, Oswald', 'Peter, Richard jun.', 'John, Paul W.', 'Danigel, Gerd', 'Helbig, Konrad', 'Aufsberg, Lala', 'Peter, Richard sen.', 'Eschen, Fritz', 'Borchert, Christian') for $x in distinct-values(//obj//a8450/a8490/text()) where (functx:is-value-in-sequence($x, $filter)) return ($x, ';') ";
 			break;
 		case "Epochen":
 			
-			var childNodes = "XQUERY let $min := 1900 let $max := 2000 for $x in distinct-values(//obj/a5064/a5071/text()) where xs:integer($x) < $max and xs:integer($x) > $min  order by xs:integer($x) return ($x, ';')";
+			//var childNodes = "XQUERY let $min := 1900 let $max := 2000 for $x in distinct-values(//obj/a5064/a5071/text()) where xs:integer($x) < $max and xs:integer($x) > $min  order by xs:integer($x) return ($x, ';')";
 			// Manuelle Jahrhunderte; später beim Hinzufügen nach min/max gehen, s. Notiz
 			query = "XQUERY let $epoch := ('21. Jh.', '20. Jh.', '19. Jh.', '18. Jh.', '17. Jh.', '16. Jh.', '15. Jh.', '14. Jh.', '13. Jh.', 'älter') for $x in $epoch return ($x, ';')";
 			break;
@@ -389,13 +426,13 @@ var getQueryForFilterName = function(filterName)
  				Portfolio-Pöppelmann-Person 
  				Portfolio-Pöppelmann-Varia 
 			 */
-			var childNodes = "XQUERY for $x in distinct-values(//obj//a55df/text()) where starts-with($x,'Portfolio-Richard-Wagner') or starts-with($x, 'Portfolio-Pöppelmann') return ($x, ';') ";
+			//var childNodes = "XQUERY for $x in distinct-values(//obj//a55df/text()) where starts-with($x,'Portfolio-Richard-Wagner') or starts-with($x, 'Portfolio-Pöppelmann') return ($x, ';') ";
 			// Manuelle Portfolio-Knoten, später beim Hinzufügen der Kindknoten nach obigem Query gehen, s. Notiz
-			query = "XQUERY for $x in ('M.D. Pöppelmann', 'Richard Wagner') return ($x, ';')";
+			query = "XQUERY for $x in ('M. D. Pöppelmann', 'Richard Wagner') return ($x, ';')";
 			break;
 		case "Gattungen":
 			// passt - explizite whitelist mit 7 einträgen im query; achtung: zwei knoten Druckgraphik und Druckgrafik, evtl. vereinen
-			query = "XQUERY declare namespace functx = 'http://www.functx.com'; declare function functx:is-value-in-sequence( $value as xs:anyAtomicType? , $seq as xs:anyAtomicType* )  as xs:boolean { $value = $seq } ; let $filter := ('Druckgraphik', 'Druckgrafik', 'Kunsthandwerk', 'Bauskulptur', 'Möbeldesign', 'Malerei', 'Skulptur', 'Architektur') for $x in distinct-values(//obj//a5220/text()) where (functx:is-value-in-sequence($x, $filter)) return ($x, ';')";
+			query = "XQUERY declare namespace functx = 'http://www.functx.com'; declare function functx:is-value-in-sequence( $value as xs:anyAtomicType? , $seq as xs:anyAtomicType* )  as xs:boolean { $value = $seq } ; let $filter := ('Druckgrafik', 'Kunsthandwerk', 'Bauskulptur', 'Möbeldesign', 'Malerei', 'Skulptur', 'Architektur') for $x in distinct-values(//obj//a5220/text()) where (functx:is-value-in-sequence($x, $filter)) return ($x, ';')";
 			break;
 		case "Länder":
 			/*
@@ -440,3 +477,99 @@ var getQueryForFilterName = function(filterName)
 	
 	return query;
 };
+
+var getImageQueryForLevelTwoNode = function(levelOneParentName, levelTwoParentName)
+{
+	// levelOneParentName tells us the category we're in, e.g. 'Gattungen' or 'Kollektionen' etc.
+	var query = null;
+	var resultSet = null;
+	
+	// cap returning result sets at this maximum:
+	var maximumResults = 100;
+	// assuming the original result is provided in the form of "let $resultset := ..."
+	// note: the amount of maximum results in the queries is doubled, because for every item returned, the query adds a delimiter character (";")
+	//	this means a resultset looking like this "result1;result2;result3;" actually has length 6 for the query engine, "result1" is the first item, ";" is the second item and so forth
+	//	this also means to get the amount specified by maximumResults, we have to actually double this factor since all the delimiter chars are thrown away later on
+	var returnUpToMaximum = "return subsequence($resultSet, 1,"+2*maximumResults+")";
+	
+	switch(levelOneParentName)
+	{
+		/*
+		 * Approach:
+		 * Attach to each level one node the query to get its level two child nodes. Use this query to retrieve the image and thumbnail URLs. 
+		 */
+		case "Fotografen":
+			resultSet = "for $x in //obj where $x//a8450/a8490/text()='"+levelTwoParentName+"' return ($x//a8470//text(), ';') ";
+			
+			break;
+		case "Epochen":
+			{ // epochen = 21. - 13. jh, danach "älter"
+				// wenn levelTwoParentName === '20. Jh.', dann soll century == 2000 sein; 20. Jh. ist > 1899 und < 2000, es geht von 1900 bis 1999, d.h. min = 1899 und max = 2000
+			
+				var century = levelTwoParentName.substring(0,2) * 100;
+				var min, max;
+				if(typeof century !== 'number')
+				{
+					max = 1300;
+					min = -9999;
+				}
+				else
+				{
+					max = century;
+					min = max-101;
+				}
+				
+				resultSet  = "for $x in //obj where count($x/a5064/a5071/text())=1 and xs:integer($x/a5064/a5071/text()) < "+max+" and xs:integer($x/a5064/a5071/text()) > "+min+"  order by xs:integer($x/a5064/a5071/text()) descending return ($x//a8470//text(), ';') ";
+				
+			}
+			break;
+		case "Kollektionen":
+			{
+				var startsWithPrefix = null;
+				if(levelTwoParentName === 'Richard Wagner')
+				{
+					startsWithPrefix = 'Portfolio-Richard-Wagner';
+				}
+				else if(levelTwoParentName === 'M. D. Pöppelmann')
+				{
+					startsWithPrefix = 'Portfolio-Pöppelmann';
+				}
+				
+				resultSet = "for $x in //obj where count($x//a55df)=1 and starts-with($x//a55df,'"+startsWithPrefix+"') return ($x//a8470//text(), ';') ";
+			}
+			break;
+		case "Gattungen":
+			resultSet = "for $x in //obj where $x//a5220/text()='"+levelTwoParentName+"' return ($x//a8470//text(), ';') ";
+			break;
+		case "Länder":
+			// find childnodes of both $part1 and $part2
+			resultSet = "let $part1 := for $x in //obj where $x/aob26/a260a/text()='"+levelTwoParentName+"' return ($x//a8470//text(), ';') let $part2 := for $x in //obj where $x/a5108/a511a/text()='"+levelTwoParentName+"' return ($x//a8470//text(), ';') let $sum := ($part1, $part2) return ($sum) ";
+			break;
+		case "Themen":
+			resultSet = "for $x in //obj where $x//aob00/a55b3/text()='"+levelTwoParentName+"' return ($x//a8470//text(), ';') ";
+			break;
+		default:
+			break;
+	}
+	
+	query = "XQUERY let $resultSet := " + resultSet + returnUpToMaximum;
+	return query;
+};
+
+var getRandomImageQueryForLevelTwoNode = function(levelOneParentName, levelTwoParentName)
+{
+	// the random query should get the entire result set and then retrieve one random image from that
+	// to make use of the optimization techniques of BaseX, this should entirely be handled by the DB and NEVER by the JS frontend,
+	// since it will have horrible performance
+	
+	// to get the entire result set query, strip the "XQUERY " prefix from an image query
+	var resultSet = getImageQueryForLevelTwoNode(levelOneParentName, levelTwoParentName).substring(7);
+	
+	var firstLetClause = "let $result := "+ resultSet;
+	var secondLetClause = " let $index := random:integer(count($result)) + 1 ";
+	var returnClause = "return $result[$index]";
+	
+	return "XQUERY " + firstLetClause+secondLetClause+returnClause;
+
+};
+

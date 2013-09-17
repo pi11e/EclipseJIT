@@ -98,12 +98,14 @@ window.kinectComponent =
 					this.rgraph.labels.getLabel(node.id).hidden = false;
 				
 				
+				
 				// center image corresponding to new highlighted node
 				var imgIndex = node.data.imgIndex;
+				console.log("setHighlightedNode: showing image at index " + imgIndex);
 				Galleria.get(0).show(imgIndex !== undefined ? imgIndex : 0);
-				
-				
 			}
+			
+			
 		},
 		/**
 		 * Triggers an animated view centering to the given node.
@@ -131,7 +133,10 @@ window.kinectComponent =
 					 hideLabels: false  // keep showing labels during transition
 				});
 				
+				
 				getImageURLsForSubnodesOf(this.getNodeById(nodeId));
+				
+				
 			}
 		},
 		/**
@@ -828,17 +833,31 @@ var pushImagesToGallery = function(imageURLs, node)
 	
 	$('#leftcol').height(window.innerHeight*0.5);
 	
-	Galleria.run('#galleria', 
-		{
-			dataSource: data,
-			height: window.innerHeight*0.5,
-			width: window.innerWidth,
-			autoplay : autoplayValue,
-			pauseOnInteraction : inFullscreenMode
-		});
+	
+	if(!Galleria.running)
+	{
+		Galleria.run('#galleria', 
+				{
+					dataSource: data,
+					height: window.innerHeight*0.5,
+					width: window.innerWidth,
+					autoplay : autoplayValue,
+					pauseOnInteraction : inFullscreenMode
+				});
+		
+
+		
+		Galleria.running = true;
+	}
+	else
+	{
+		Galleria.get(0).load(data);
+	}
+
 	
 	userChangedImage = false; // this needs to be re-set to default false 
 };
+
 
 /**
  * For a given filter tag (e.g. "a99d3") and its value (e.g. "KUR-Projekt"),
@@ -855,6 +874,8 @@ var getImageURLsForSubnodesOf = function(node)
 	
 	// reset imageURLs
 	window.imageURLs = new Array();
+	
+	console.log("selected node global level: " + selectedNodeGlobalLevel);
 	
 	// this method gets the image URLs for a given node based on its global level (
 	
@@ -874,11 +895,16 @@ var getImageURLsForSubnodesOf = function(node)
 			};
 		 */
 		
+		
+		
 		// no shuffle function needed: image selection can be found in /data/toplevelimages/$nodename
 		var subnodeIndex = 0;
 		// iterate over each filter node
-		node.eachSubnode(function(subnode)
+		for(var id in node.adjacencies)
 		{
+			var subnode = window.kinectComponent.getNodeById(id);
+			console.log("parent node: " + node.name + "; subnode: " + subnode.name);
+			
 			subnode.data.imgIndex = subnodeIndex++; // the index for this image in galleria 
 			var name = subnode.name;
 			if(name === "Länder")
@@ -889,56 +915,52 @@ var getImageURLsForSubnodesOf = function(node)
 			// each key represents one filter name
 			var imgName = "http://localhost:8080/JITWebProject/data/toplevelimages/" + name + ".png";
 			
+			
 			window.imageURLs.push(imgName);
-			
-			
-		});
+		}
+		
+//		node.eachSubnode(function(subnode)
+//		{
+//			subnode.data.imgIndex = subnodeIndex++; // the index for this image in galleria 
+//			var name = subnode.name;
+//			if(name === "Länder")
+//			{
+//				name = "Laender";
+//			}
+//			
+//			// each key represents one filter name
+//			var imgName = "http://localhost:8080/JITWebProject/data/toplevelimages/" + name + ".png";
+//			
+//			console.log("pushing image URL for node " + name + ": " + imgName + " at index " + subnode.data.imgIndex);
+//			window.imageURLs.push(imgName);
+//			
+//			
+//			
+//		});
 	}
 	else if(selectedNodeGlobalLevel === 1)
 	{
-		// get image URLs for each possible value of the given filter; the tag which is represented by the node can be found in the nodeTagMap
-		// - NOTE: nodeTagMap maps a nodename to a tag and is defined in ebookshelf.js
-		// ... these images should illustrate the filter node values (one image per filter subnode, e.g. "KUR-Projekt", "Archiv der Fotografen" etc.)
-		filterTag = nodeTagMap[node.name];
-		
+		// example subnode: "Richard Wagner" (Parent: "Kollektionen") or "Deutschland" (Parent: "Länder").
 		
 		// for each subnode... 
 		node.eachSubnode(function(subnode)
 		{
 			if(subnode.id === '0')
-			{	return;	} // ... (excluding the global root)
+			{	/* do nothing*/	} 
 			else
 			{
-				// find a random image from the result set behind that subnode
-				filterValue = subnode.name;
-				//console.log("node name = " + node.name + "; filterTag = " + filterTag + "; filterValue = " + filterValue);
-				
-				// this returns all image URLs for the given filter tag and value
-				//query = "XQUERY for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return ($x//a8470//text(), ';')";
-				// we only want one (for each subnode), and it should be random
-				/*
-				 * example query:
-				 * 
-				 * - gets the entire result set
-					let $result := for $x in //obj where $x//a55b3//text()='1990 - Gegenwart' return ($x//a8470//text())
-					- creates a random index between 1 and length of result set
-					let $index := random:integer(count($result)) + 1
-					- returns the element at the random index... NOTE: index retrieval in BaseX/Xquery is 1-relative, not 0-relative!
-					- ... that's why the random index is manually set to +1 (otherwise it would start at 0)
-					- ... also IMPORTANT: the integer generation is maximum-exclusive, i.e. the actual count($result) will never be assigned! 
-					return ($index, ": ", $result[$index])
-				 * 
-				 * 
-				 */
-				var firstLetClause = "let $result := for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return $x//a8470//text() ";
-				var secondLetClause = "let $index := random:integer(count($result)) + 1 ";
-				var returnClause = "return $result[$index]";
-				query = "XQUERY " + firstLetClause + secondLetClause + returnClause;
+				// get a random image from this node's children to display as its own
+				// note: this query will respond with a single image URL, so a simple push will suffice
+				query = node.data.ownImageQuery;
+				if(!query)
+				{
+					console.log("invalid image data for node " + node.name + ". no own image query found.");
+					return;
+				}
 	
 				var callback = function(data)
 				{
 					window.imageURLs.push(data);
-					
 				};
 				
 				queryDB(query, callback, false);
@@ -952,20 +974,14 @@ var getImageURLsForSubnodesOf = function(node)
 		// get image URLs for the result set that sits behind each filter value
 		// ... these images should represent the entire result set of a filter value (e.g. get all urls for objects that have "Archiv der Fotografen")
 		
-		// the filter tag we need to get from the parent of the selected node
+		query = node.data.childImageQuery;		
+		if(!query)
+		{
+			console.log("invalid image data for node " + node.name + ". no child image query found.");
+			return;
+		}
 		
-		// getParents() fails when the filter value node is selected (is the root); getParents will return an empty array
-		// -> get the parent by looking up the path history, using the rgraph.nodesInPath property, which at this point will have 
-		// a length of 3 and look like this: ["0", $parentNode.id, node.id]
-		//var parentNode = node.getParents()[0];
-		
-		var parentNode = controller.getNodeById(controller.rgraph.nodesInPath[1]);
-		filterTag = nodeTagMap[parentNode.name];
-		filterValue = node.name;
-		query = "XQUERY for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return ($x//a8470//text(), ';')";
-		
-		
-		
+		// note: this query will respond with a number of URLs split by delimiter ";"
 		var callback = function(data)
 		{
 			window.imageURLs = data.split(";");
@@ -986,4 +1002,140 @@ var getImageURLsForSubnodesOf = function(node)
 	// every time we get new image URLs, we want them to be displayed in the gallery
 	pushImagesToGallery(window.imageURLs, node);
 };
+
+//var getImageURLsForSubnodesOf = function(node)
+//{
+//	var controller = window.kinectComponent;
+//	var selectedNodeGlobalLevel = controller.getGlobalLevel(node); // will be a value between 0 and 2
+//	var filterValue = undefined;
+//	var filterTag = undefined;
+//	var query = undefined;
+//	
+//	// reset imageURLs
+//	window.imageURLs = new Array();
+//	
+//	// this method gets the image URLs for a given node based on its global level (
+//	
+//	if(selectedNodeGlobalLevel === 0)
+//	{
+//		// get image URLs for each of the (currently six) filter nodes
+//		// ... these images should illustrate the filter node (e.g. "nach Sammlung", "nach Thema" etc.)
+//		
+//		
+//		
+//		// no shuffle function needed: image selection can be found in /data/toplevelimages/$nodename
+//		var subnodeIndex = 0;
+//		// iterate over each filter node
+//		node.eachSubnode(function(subnode)
+//		{
+//			subnode.data.imgIndex = subnodeIndex++; // the index for this image in galleria 
+//			var name = subnode.name;
+//			if(name === "Länder")
+//			{
+//				name = "Laender";
+//			}
+//			
+//			// each key represents one filter name
+//			var imgName = "http://localhost:8080/JITWebProject/data/toplevelimages/" + name + ".png";
+//			
+//			window.imageURLs.push(imgName);
+//			
+//			
+//		});
+//	}
+//	else if(selectedNodeGlobalLevel === 1)
+//	{
+//		// get image URLs for each possible value of the given filter; the tag which is represented by the node can be found in the nodeTagMap
+//		// - NOTE: nodeTagMap maps a nodename to a tag and is defined in ebookshelf.js
+//		// ... these images should illustrate the filter node values (one image per filter subnode, e.g. "KUR-Projekt", "Archiv der Fotografen" etc.)
+//		filterTag = nodeTagMap[node.name];
+//		
+//		
+//		// for each subnode... 
+//		node.eachSubnode(function(subnode)
+//		{
+//			if(subnode.id === '0')
+//			{	return;	} // ... (excluding the global root)
+//			else
+//			{
+//				// find a random image from the result set behind that subnode
+//				filterValue = subnode.name;
+//				//console.log("node name = " + node.name + "; filterTag = " + filterTag + "; filterValue = " + filterValue);
+//				
+//				// this returns all image URLs for the given filter tag and value
+//				//query = "XQUERY for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return ($x//a8470//text(), ';')";
+//				// we only want one (for each subnode), and it should be random
+//				
+////				 example query:
+////				  
+////				  - gets the entire result set
+////					let $result := for $x in //obj where $x//a55b3//text()='1990 - Gegenwart' return ($x//a8470//text())
+////					- creates a random index between 1 and length of result set
+////					let $index := random:integer(count($result)) + 1
+////					- returns the element at the random index... NOTE: index retrieval in BaseX/Xquery is 1-relative, not 0-relative!
+////					- ... that's why the random index is manually set to +1 (otherwise it would start at 0)
+////					- ... also IMPORTANT: the integer generation is maximum-exclusive, i.e. the actual count($result) will never be assigned! 
+////					return ($index, ": ", $result[$index])
+////				  
+////				  
+////				 
+//				var firstLetClause = "let $result := for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return $x//a8470//text() ";
+//				var secondLetClause = "let $index := random:integer(count($result)) + 1 ";
+//				var returnClause = "return $result[$index]";
+//				query = "XQUERY " + firstLetClause + secondLetClause + returnClause;
+//	
+//				var callback = function(data)
+//				{
+//					window.imageURLs.push(data);
+//					
+//				};
+//				
+//				queryDB(query, callback, false);
+//				//window.imageURLs.push("http://www.deutschefotothek.de/cms/images/home-kartenforum.jpg");
+//			}
+//		});
+//		
+//	}
+//	else if(selectedNodeGlobalLevel === 2)
+//	{
+//		// get image URLs for the result set that sits behind each filter value
+//		// ... these images should represent the entire result set of a filter value (e.g. get all urls for objects that have "Archiv der Fotografen")
+//		
+//		// the filter tag we need to get from the parent of the selected node
+//		
+//		// getParents() fails when the filter value node is selected (is the root); getParents will return an empty array
+//		// -> get the parent by looking up the path history, using the rgraph.nodesInPath property, which at this point will have 
+//		// a length of 3 and look like this: ["0", $parentNode.id, node.id]
+//		//var parentNode = node.getParents()[0];
+//		
+//		var parentNode = controller.getNodeById(controller.rgraph.nodesInPath[1]);
+//		filterTag = nodeTagMap[parentNode.name];
+//		filterValue = node.name;
+//		query = "XQUERY for $x in //obj where $x//"+filterTag+"//text()='"+filterValue+"' return ($x//a8470//text(), ';')";
+//		
+//		
+//		
+//		var callback = function(data)
+//		{
+//			window.imageURLs = data.split(";");
+//
+//			
+//		};
+//
+//		// note: queryDB is declared in ebookshelf.js
+//		queryDB(query, callback, false);
+//		
+//	}
+//	else
+//	{
+//		return null;
+//	}
+//	
+//	
+//	// every time we get new image URLs, we want them to be displayed in the gallery
+//	pushImagesToGallery(window.imageURLs, node);
+//};
+
+
+
 
