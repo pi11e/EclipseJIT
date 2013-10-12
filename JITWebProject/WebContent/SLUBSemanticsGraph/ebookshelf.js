@@ -268,12 +268,12 @@ var addNodesWithNamesToRoot = function(nodeNames, rootNode)
 				
 		   }; // end of newNode
 		
-		// When a level two node is added, it should know how to get its children's image URLs.
-		// 1. Find out whether the currently added node is a level two node. This can be done by finding out whether this node's parent node (the rootNode parameter in this method) is contained in the filterNodes list.
-		// 2. Lookup the childNodes query
-		// 3. Store it in the data.childNodeQuery property
-		if(jQuery.inArray(rootNode.name, filterNames) !== -1) // meaning rootNode.name IS in the filterNames array
+		if(jQuery.inArray(rootNode.name, filterNames) !== -1) // meaning rootNode.name IS in the filterNames array, i.e. the newNode will be below the filter nodes, representing a filter value
 		{
+			// When a level two node is added, it should know how to get its children's image URLs.
+			// 1. Find out whether the currently added node is a level two node. This can be done by finding out whether this node's parent node (the rootNode parameter in this method) is contained in the filterNodes list.
+			// 2. Lookup the childNodes query
+			// 3. Store it in the data.childNodeQuery property
 			// submit this query to find all child node images
 			newNode.data.childImageQuery = getImageQueryForLevelTwoNode(rootNode.name, nodeName);
 			// submit this query to find one representative image for this node
@@ -508,12 +508,15 @@ var getImageQueryForLevelTwoNode = function(levelOneParentName, levelTwoParentNa
 			
 				var century = levelTwoParentName.substring(0,2) * 100;
 				var min, max;
-				if(typeof century !== 'number')
+				
+				//console.log("century = " + century + "; typeof century = " + (typeof century));
+				
+				if(century === 'NaN')
 				{
-					max = 1300;
-					min = -9999;
+					max = "1300";
+					min = "-9999";
 				}
-				else
+				else if(typeof century === "number")
 				{
 					max = century;
 					min = max-101;
@@ -566,7 +569,7 @@ var getRandomImageQueryForLevelTwoNode = function(levelOneParentName, levelTwoPa
 	var resultSet = getImageQueryForLevelTwoNode(levelOneParentName, levelTwoParentName).substring(7);
 	
 	var firstLetClause = "let $result := "+ resultSet;
-	var secondLetClause = " let $index := random:integer(count($result)) + 1 ";
+	var secondLetClause = "let $index := random:integer(xs:integer(50))*2 + 1 ";
 	var returnClause = "return $result[$index]";
 	
 	return "XQUERY " + firstLetClause+secondLetClause+returnClause;

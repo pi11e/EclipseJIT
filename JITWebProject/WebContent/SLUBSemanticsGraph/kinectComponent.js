@@ -101,12 +101,30 @@ window.kinectComponent =
 				
 				// center image corresponding to new highlighted node
 				var imgIndex = node.data.imgIndex;
-				console.log("setHighlightedNode: showing image at index " + imgIndex);
-				Galleria.get(0).show(imgIndex !== undefined ? imgIndex : 0);
+				this.showImageAtIndex(imgIndex);
 			}
 			
 			
 		},
+		
+		/**
+		 * From the currently loaded thumbnails, shows the one at the given index
+		 */
+		showImageAtIndex : function(imgIndex)
+		{
+			Galleria.get(0).show(imgIndex !== undefined ? imgIndex : 0);
+			// load image title & description?
+			var imageURL = Galleria.get(0).getActiveImage().src;
+			
+			var query = "XQUERY for $x in //obj where $x//a8470//text()='"+imageURL+"' return ($x//a5200//text(), ';', $x//a52df//text())";
+			queryDB(query, function(data)
+			{
+				var tempData = data.split(';');
+				setImageTitleAndDescription(tempData[0], tempData[1]);
+			}, 
+			false);
+		},
+		
 		/**
 		 * Triggers an animated view centering to the given node.
 		 * @param node
@@ -809,7 +827,11 @@ var pushImagesToGallery = function(imageURLs, node)
 			// that are loaded from the server's data/toplevelimages folder
 			var thumbnailURL = imageURL.replace("fotos", "thumbs");
 			
+			
+			
 			data.push({thumb: thumbnailURL, image: imageURL});
+			
+			
 		}
 		
 	}	
@@ -849,10 +871,10 @@ var pushImagesToGallery = function(imageURLs, node)
 		
 		Galleria.running = true;
 	}
-	else
-	{
+//	else
+//	{
 		Galleria.get(0).load(data);
-	}
+//	}
 
 	
 	userChangedImage = false; // this needs to be re-set to default false 
@@ -942,6 +964,7 @@ var getImageURLsForSubnodesOf = function(node)
 	{
 		// example subnode: "Richard Wagner" (Parent: "Kollektionen") or "Deutschland" (Parent: "Länder").
 		
+		var subnodeIndex = 0;
 		// for each subnode... 
 		node.eachSubnode(function(subnode)
 		{
@@ -951,7 +974,8 @@ var getImageURLsForSubnodesOf = function(node)
 			{
 				// get a random image from this node's children to display as its own
 				// note: this query will respond with a single image URL, so a simple push will suffice
-				query = node.data.ownImageQuery;
+				subnode.data.imgIndex = subnodeIndex++; // the index for this image in galleria 
+				query = subnode.data.ownImageQuery;
 				if(!query)
 				{
 					console.log("invalid image data for node " + node.name + ". no own image query found.");
@@ -960,6 +984,7 @@ var getImageURLsForSubnodesOf = function(node)
 	
 				var callback = function(data)
 				{
+					console.log("pushing image data for lvl 1 node " + data);
 					window.imageURLs.push(data);
 				};
 				
@@ -1001,6 +1026,16 @@ var getImageURLsForSubnodesOf = function(node)
 	
 	// every time we get new image URLs, we want them to be displayed in the gallery
 	pushImagesToGallery(window.imageURLs, node);
+};
+
+var setImageTitleAndDescription = function(title, description)
+{
+	
+	imgTitle.innerText = "Titel: " + title;
+	if(description !== '' && description !== undefined && description !== title )
+		imgDescription.innerHTML = description;
+	else
+		imgDescription.hidden = true;
 };
 
 //var getImageURLsForSubnodesOf = function(node)

@@ -29,7 +29,10 @@
 
 <tr>
 <td>
-
+<div id="imgTitleDiv" align="center" hidden>
+<label id="imgTitle">Titel: </label><br>
+<label id="imgDescription">Beschreibung: </label>
+</div>
 <script type="text/javascript" src="../lib/galleria/galleria-1.2.9.min.js"></script>
 
 <script type="text/javascript">
@@ -42,6 +45,8 @@ $(function(){
     $('#galleria').height(window.innerHeight*0.5);
     $('#leftcol').height(window.innerHeight*0.5);
     $('#leftcol').width(window.innerWidth*0.5);
+    
+    
 });
 
 </script>
@@ -54,7 +59,7 @@ $(function(){
 	Galleria.loadTheme('../lib/galleria/themes/classic/galleria.classic.min.js');
 	// set config debug to false, it doesn't handle setting its stage width to 0 very well
 	// (Fatal error: Stage width or height is too small to show the gallery. Traced measures: width:0px, height: 0px)
-	Galleria.configure({debug: true, transitionSpeed: 200}) // oder so ähnlich
+	Galleria.configure({debug: true, transitionSpeed: 200}) 
 	
 	// other ways of handling data:
 	// see kinectComponent.pushImagesToGallery
@@ -70,7 +75,6 @@ $(function(){
 	*/
 
 </script>
-
 </td>
 </tr>
 

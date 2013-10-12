@@ -2,7 +2,6 @@ package de.tudresden.mg.ebookshelf.data;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 
 import org.basex.BaseXServer;
 import org.basex.core.cmd.CreateDB;
@@ -13,7 +12,7 @@ import org.basex.server.ClientSession;
 public class BaseXController 
 {
 	private BaseXServer server = null;
-	private BaseXController _instance = null;
+	
 	
 	// for details on java singletons, see
 	// http://en.wikipedia.org/wiki/Singleton_pattern#The_solution_of_Bill_Pugh
