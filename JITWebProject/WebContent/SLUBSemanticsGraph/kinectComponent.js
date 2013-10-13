@@ -47,10 +47,14 @@ window.kinectComponent =
 		
 		//- node highlighting 
 //				(visually emphasizing one node, allowing clear distinction from other nodes)
+		/**
+		 * Highlights the given node.
+		 */
 		setHighlightedNode : function(node)
 		{
+			// NOTE: this function has several important implications to the display in both the gallery and graph components
 			
-			
+			// ###### exclude special cases
 			if(this.rgraph.busy)
 				return; // force user to wait until animation is done
 
@@ -74,12 +78,16 @@ window.kinectComponent =
 			if(node.id === "0" || node.id === "1")
 				return;
 			
+			// ###### end of exclude special cases
+			
 			// if given node isn't already highlighted,
 			if(this.highlightedNode !== node) // note: this.highlightedNode may be undefined at this point if no previous highlighting has happened
 			{
 				//console.log("setting highlight for node " + node.name); // log the new node
 				
 				// turn currently highlighted node "off"
+				// note: this returns the current highlighted node back to its previous state with the regular color (blue-greenish)
+				// and a hidden label if the node is lower than lvl 1
 				this.turnOffHighlightedNode();
 				
 				// set new highlighted node
@@ -126,6 +134,24 @@ window.kinectComponent =
 		},
 		
 		/**
+		 * Toggles diplaying the label of a node with the given ID.
+		 * @param nodeId
+		 */
+		toggleLabelForNodeWithId : function(nodeId)
+		{
+			this.rgraph.labels.getLabel(nodeId).hidden = !this.rgraph.labels.getLabel(nodeId).hidden;
+		},	
+		
+		/**
+		 * Toggles diplaying the label of a given node.
+		 * @param node
+		 */
+		toggleLabelForNode : function(node)
+		{
+			this.toggleLabelForNodeWithId(node.id);
+		},
+		
+		/**
 		 * Triggers an animated view centering to the given node.
 		 * @param node
 		 */
@@ -145,6 +171,13 @@ window.kinectComponent =
 			if(this.isNode(this.rgraph.graph.getNode(nodeId)))
 			{
 				this.clearInteractionArtifacts();
+				
+				// if given node is at global lvl 2, its label will be hidden - we need to show it
+				var currentNode = this.getNodeById(nodeId);
+				if(this.getGlobalLevel(currentNode) === 2)
+				{
+					this.toggleLabelForNode(currentNode);
+				}
 				
 				// the node we're looking for does indeed exist
 				this.rgraph.onClick(nodeId, {  
