@@ -2,10 +2,13 @@ package de.tudresden.mg.ebookshelf.data;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Timer;
 
 import org.basex.BaseXServer;
 import org.basex.core.cmd.CreateDB;
 import org.basex.server.ClientSession;
+
+import com.sun.org.apache.bcel.internal.generic.NEWARRAY;
 
 
 
@@ -13,12 +16,14 @@ public class BaseXController
 {
 	private BaseXServer server = null;
 	
+	private ClientSession _session;
 	
 	// for details on java singletons, see
 	// http://en.wikipedia.org/wiki/Singleton_pattern#The_solution_of_Bill_Pugh
 	private BaseXController()
 	{
 		// private constructor prevents instantiation by other classes
+		
 	}
 	
 	public static BaseXController getInstance()
@@ -47,7 +52,7 @@ public class BaseXController
 		    
 		    
 		    session.execute(new CreateDB("input", pathToXMLData));
-		    
+		    session.execute("OPEN input");
 		    
 		    session.close();
 		    return true;
@@ -77,13 +82,25 @@ public class BaseXController
 	 */
 	public void executeQuery(String XQuery, OutputStream out) throws IOException
 	{
-		ClientSession session = getSession();
-		session.execute("OPEN input");
-		session.setOutputStream(out);
-				
-		session.execute(XQuery);
+		if(this._session == null)
+		{
+			this._session = getSession();	
+		}
 		
-		session.close();
+		
+		_session.execute("OPEN input");
+		_session.setOutputStream(out);
+		_session.execute(XQuery);
+		
+		
+		
+//		ClientSession session = getSession();
+//		session.execute("OPEN input");
+//		session.setOutputStream(out);
+//				
+//		session.execute(XQuery);
+//		
+//		session.close();
 	}
 	
 	/**

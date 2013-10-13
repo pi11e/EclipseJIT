@@ -30,6 +30,14 @@ window.kinectComponent =
 		//functions required for graph manipulation:
 
 		/**
+		 * Returns the node instance that is currently centered (i.e. the current root node).
+		 */
+		getRoot : function()
+		{
+			return this.getNodeById(this.rgraph.root);
+		},
+		
+		/**
 		 * Returns the currently highlighted node back to its regular state (including the hidden label 
 		 * if the node is below level 1).
 		 */
@@ -110,9 +118,47 @@ window.kinectComponent =
 				// center image corresponding to new highlighted node
 				var imgIndex = node.data.imgIndex;
 				this.showImageAtIndex(imgIndex);
+				// show title for node
+				this.showTitleForNode(node);
 			}
 			
 			
+		},
+		
+		showTitleForNode : function(node)
+		{
+			setTitleLabel("");
+			
+			if(this.getGlobalLevel(node) < 1)
+			{
+				// do nothing
+			}
+			else
+			{
+				// find the title of the image
+				var imageURL = Galleria.get(0).getActiveImage().src;
+				
+				console.log("getting title for image " + imageURL);
+								
+				
+				
+				// gets description and title
+				//var query = "XQUERY for $x in //obj where $x//a8470//text()='"+imageURL+"' return ($x//a5200//text(), ';', $x//a52df//text())";
+				// just title:
+				//var query = "XQUERY for $x in //obj where $x//a8470//text()='"+imageURL+"' return $x//a5200//text()";
+				
+				// optimized query:
+				var query = "XQUERY //obj//a5200//text()[../../a8450/a8470='"+imageURL+"']";
+				
+				queryDB(query, function(data)
+				{
+					//var tempData = data.split(';');
+					setTitleLabel(data);
+				}, 
+				false);
+			}
+			
+						
 		},
 		
 		/**
@@ -121,16 +167,6 @@ window.kinectComponent =
 		showImageAtIndex : function(imgIndex)
 		{
 			Galleria.get(0).show(imgIndex !== undefined ? imgIndex : 0);
-			// load image title & description?
-			var imageURL = Galleria.get(0).getActiveImage().src;
-			
-			var query = "XQUERY for $x in //obj where $x//a8470//text()='"+imageURL+"' return ($x//a5200//text(), ';', $x//a52df//text())";
-			queryDB(query, function(data)
-			{
-				var tempData = data.split(';');
-				setImageTitleAndDescription(tempData[0], tempData[1]);
-			}, 
-			false);
 		},
 		
 		/**
@@ -631,22 +667,26 @@ window.kinectComponent =
 				case 0:
 					if(userEnteringMediumZone)
 					{
+						interactionZone.innerText = 'zone: medium';
 						this.centerHighlightedNode();
 					}
 					break;
 				case 1:
 					if(userEnteringFarZone)
 					{
+						interactionZone.innerText = 'zone: far';
 						this.backOneLevel();
 					}
 					else if(userEnteringNearZone)
 					{
+						interactionZone.innerText = 'zone: near';
 						this.centerHighlightedNode();
 					}
 					break;
 				case 2:
 					if(userEnteringMediumZone)
 					{
+						interactionZone.innerText = 'zone: medium';
 						this.backOneLevel();
 					}
 					break;
@@ -815,8 +855,11 @@ window.kinectComponent =
 
 
 
-var pushImagesToGallery = function(imageURLs, node)
+var pushImagesToGallery = function(imageURLs, selectedNodeGlobalLevel)
 {
+	console.log("global level: " + selectedNodeGlobalLevel);
+	console.log(imageURLs);
+	
 	// imageURLs as an array of string urls to jpg images
 	
 	// galleria wants data in this format:
@@ -832,7 +875,7 @@ var pushImagesToGallery = function(imageURLs, node)
 	});
 	*/
 	
-	var selectedNodeGlobalLevel = window.kinectComponent.getGlobalLevel(node); // will be a value between 0 and 2
+//	var selectedNodeGlobalLevel = window.kinectComponent.getGlobalLevel(node); // will be a value between 0 and 2
 	
 	var data = new Array();
 	// transform image urls for galleria:
@@ -872,8 +915,36 @@ var pushImagesToGallery = function(imageURLs, node)
 	
 	// a number of flags to control gallery behavior
 	var inFullscreenMode = false; // if the user is viewing images in fullscreen, stop slideshow
-	var userChangedImage = false; // if the user changed an image by interacting, that image should stay for 10 seconds; otherwise, slideshow runs at 3 seconds per image
+	//window.userChangedImage = false; // if the user changed an image by interacting, that image should stay for 10 seconds; otherwise, slideshow runs at 3 seconds per image
 	 
+	
+
+	
+	
+	
+	
+	if(!Galleria.running)
+	{
+		
+		Galleria.run('#galleria', 
+				{
+					dataSource: data,
+					height: window.innerHeight*0.5,
+					width: window.innerWidth,
+					autoplay : false,
+					pauseOnInteraction : inFullscreenMode,
+					dummy : 'http://www.deutschefotothek.de/bilder/dflogo.png',
+					imageTimeout : 30000
+				});
+		
+
+		
+		Galleria.running = true;
+	}
+	else
+	{
+		Galleria.get(0).load(data);
+	}
 	
 	var autoplayValue = 3000; // default: slideshow with 3 seconds per image (= 3000 ms)
 	if(inFullscreenMode || selectedNodeGlobalLevel < 2)
@@ -882,35 +953,19 @@ var pushImagesToGallery = function(imageURLs, node)
 	}
 	else if(userChangedImage)
 	{
-		autoplayValue = 1000;
+		autoplayValue = 10000;
+		
+	}
+	
+	if(autoplayValue) 
+	{
+		console.log("running galleria with autoplay value = " + autoplayValue);
+		Galleria.run('#galleria', {autoplay : autoplayValue});
 	}
 	// for possible options, see http://galleria.io/docs/options/
-	
-	$('#leftcol').height(window.innerHeight*0.5);
-	
-	
-	if(!Galleria.running)
-	{
-		Galleria.run('#galleria', 
-				{
-					dataSource: data,
-					height: window.innerHeight*0.5,
-					width: window.innerWidth,
-					autoplay : autoplayValue,
-					pauseOnInteraction : inFullscreenMode
-				});
-		
-
-		
-		Galleria.running = true;
-	}
-//	else
-//	{
-		Galleria.get(0).load(data);
-//	}
 
 	
-	userChangedImage = false; // this needs to be re-set to default false 
+	window.userChangedImage = false; // this needs to be re-set to default false 
 };
 
 
@@ -974,6 +1029,8 @@ var getImageURLsForSubnodesOf = function(node)
 			window.imageURLs.push(imgName);
 		}
 		
+		pushImagesToGallery(window.imageURLs, selectedNodeGlobalLevel);
+		
 //		node.eachSubnode(function(subnode)
 //		{
 //			subnode.data.imgIndex = subnodeIndex++; // the index for this image in galleria 
@@ -1019,10 +1076,12 @@ var getImageURLsForSubnodesOf = function(node)
 				{
 					console.log("pushing image data for lvl 1 node " + data);
 					window.imageURLs.push(data);
+					// push to gallery cannot occur within the query, because the query does only return single images
+					// ... which means the query has to be synchronous so the push waits for the images
 				};
 				
 				queryDB(query, callback, false);
-				//window.imageURLs.push("http://www.deutschefotothek.de/cms/images/home-kartenforum.jpg");
+				pushImagesToGallery(window.imageURLs, selectedNodeGlobalLevel);
 			}
 		});
 		
@@ -1043,12 +1102,13 @@ var getImageURLsForSubnodesOf = function(node)
 		var callback = function(data)
 		{
 			window.imageURLs = data.split(";");
+			// push to gallery can occur within the query, since the query returns the entire result set
+			pushImagesToGallery(window.imageURLs, selectedNodeGlobalLevel);
 
-			
 		};
 
 		// note: queryDB is declared in ebookshelf.js
-		queryDB(query, callback, false);
+		queryDB(query, callback, true); // NOTE: ASYNC QUERY!
 		
 	}
 	else
@@ -1058,17 +1118,15 @@ var getImageURLsForSubnodesOf = function(node)
 	
 	
 	// every time we get new image URLs, we want them to be displayed in the gallery
-	pushImagesToGallery(window.imageURLs, node);
+	//pushImagesToGallery(window.imageURLs, node); // now handled inside the queries for increased performance
 };
 
-var setImageTitleAndDescription = function(title, description)
+var setTitleLabel = function(title)
 {
+	// note: called by showImageAtIndex
 	
-	imgTitle.innerText = "Titel: " + title;
-	if(description !== '' && description !== undefined && description !== title )
-		imgDescription.innerHTML = description;
-	else
-		imgDescription.hidden = true;
+	imgTitle.innerHTML = "<font size=5>"+title+"</font>";
+		
 };
 
 //var getImageURLsForSubnodesOf = function(node)

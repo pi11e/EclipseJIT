@@ -428,7 +428,7 @@ var getChildNodesForLevelOne = function(levelOneNodeName)
 			 */
 			//var childNodes = "XQUERY for $x in distinct-values(//obj//a55df/text()) where starts-with($x,'Portfolio-Richard-Wagner') or starts-with($x, 'Portfolio-Pöppelmann') return ($x, ';') ";
 			// Manuelle Portfolio-Knoten, später beim Hinzufügen der Kindknoten nach obigem Query gehen, s. Notiz
-			query = "XQUERY for $x in ('M. D. Pöppelmann', 'Richard Wagner') return ($x, ';')";
+			query = "XQUERY for $x in 1 return ('M. D. Pöppelmann',';','Richard Wagner',';')";
 			break;
 		case "Gattungen":
 			// passt - explizite whitelist mit 7 einträgen im query; achtung: zwei knoten Druckgraphik und Druckgrafik, evtl. vereinen

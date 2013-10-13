@@ -23,15 +23,15 @@
 <script type="text/javascript" src="../websocket.js"></script>
 
 <button id='start' onclick="createFirstGraphLevel()">start the show</button>
-<button id='start' onclick="openConnection()">kinect</button>
+<button id='kinectMonitor' onclick='window.open("http://localhost:8080/JITWebProject/SLUBSemanticsGraph/kinectMonitor.html")'>kinect monitor</button>
+<label id='interactionZone'>zone: -1</label>
 
 <table role="presentation">
 
 <tr>
 <td>
-<div id="imgTitleDiv" align="center" hidden>
-<label id="imgTitle">Titel: </label><br>
-<label id="imgDescription">Beschreibung: </label>
+<div id="imgTitleDiv" align="center">
+<label id="imgTitle"><font size=5>none</font></label><br>
 </div>
 <script type="text/javascript" src="../lib/galleria/galleria-1.2.9.min.js"></script>
 
@@ -59,7 +59,7 @@ $(function(){
 	Galleria.loadTheme('../lib/galleria/themes/classic/galleria.classic.min.js');
 	// set config debug to false, it doesn't handle setting its stage width to 0 very well
 	// (Fatal error: Stage width or height is too small to show the gallery. Traced measures: width:0px, height: 0px)
-	Galleria.configure({debug: true, transitionSpeed: 200}) 
+	Galleria.configure({debug: true, transitionSpeed: 50}) 
 	
 	// other ways of handling data:
 	// see kinectComponent.pushImagesToGallery

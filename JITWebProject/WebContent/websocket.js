@@ -38,7 +38,8 @@ var openConnection = function()
 	
 	
     // Initialize a new web socket.
-    socket = new WebSocket("ws://localhost:8181/KinectHtml5");
+    //socket = new WebSocket("ws://localhost:8181/KinectHtml5");
+    socket = new WebSocket("ws://192.168.178.23:8181/KinectHtml5");
 
     // Connection established.
     socket.onopen = function () 
