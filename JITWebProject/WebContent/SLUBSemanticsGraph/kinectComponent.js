@@ -117,6 +117,8 @@ window.kinectComponent =
 				
 				// center image corresponding to new highlighted node
 				var imgIndex = node.data.imgIndex;
+				console.log("showing image at index " + imgIndex);
+				
 				this.showImageAtIndex(imgIndex);
 				// show title for node
 				this.showTitleForNode(node);
@@ -614,7 +616,7 @@ window.kinectComponent =
         		this.getNodeById("1").setPos(newPos);
         		
         		// set highlight to closest graph node
-        		var closestNode = $jit.Graph.Util.getClosestNodeToNode(this.rgraph.graph, this.getNodeById("1"));
+        		var closestNode = this.getClosestNodeToHandCursor();
         		//console.log("found closest node: " + closestNode);
         		this.setHighlightedNode(closestNode);
         		
@@ -623,6 +625,13 @@ window.kinectComponent =
 			}
 			
 		},
+		
+		getClosestNodeToHandCursor : function()
+		{
+			return $jit.Graph.Util.getClosestNodeToNode(this.rgraph.graph, this.getNodeById("1"));
+		},
+		
+		
 		
 		checkInteractionZone : function(currentDepth)
 		{
@@ -1081,9 +1090,11 @@ var getImageURLsForSubnodesOf = function(node)
 				};
 				
 				queryDB(query, callback, false);
-				pushImagesToGallery(window.imageURLs, selectedNodeGlobalLevel);
+				
 			}
 		});
+		
+		pushImagesToGallery(window.imageURLs, selectedNodeGlobalLevel);
 		
 	}
 	else if(selectedNodeGlobalLevel === 2)
@@ -1127,6 +1138,57 @@ var setTitleLabel = function(title)
 	
 	imgTitle.innerHTML = "<font size=5>"+title+"</font>";
 		
+};
+
+//######### DEBUG CODE ###########
+
+var simulateHandCursorMovement = function(left)
+{
+	// simulate node movement: excerpt from dispatchHandMovement
+	
+	// adjust position of the hand node
+	var oldTheta = kinectComponent.getNodeById("1").getPos().theta;
+	if(oldTheta === 0) {oldTheta = 2*Math.PI;}
+	
+	var baseSpeed = 0.1;
+	var newTheta = oldTheta + baseSpeed * (left ? -1.5 : 1.5);
+	        		
+	// Polar(theta, rho) where theta is the angle and rho the norm (i.e. radius)
+	var newPos = new $jit.Polar(newTheta, 150);  
+	kinectComponent.getNodeById("1").setPos(newPos);
+	
+	// set highlight to closest graph node
+	var closestNode = kinectComponent.getClosestNodeToHandCursor();
+	//console.log("found closest node: " + closestNode);
+	kinectComponent.setHighlightedNode(closestNode);
+	
+	kinectComponent.rgraph.plot();
+};
+
+var enableKeyboardKinect = function()
+{
+	
+
+	 
+	
+	document.addEventListener('keydown', function(event) {
+	    if(event.keyCode == 37) {
+	        //alert('Left was pressed');
+	    	simulateHandCursorMovement(true);
+	    }
+	    else if(event.keyCode == 38) {
+	        //alert('UP was pressed');
+	    	kinectComponent.centerHighlightedNode();
+	    }
+	    else if(event.keyCode == 39) {
+	        //alert('Right was pressed');
+	    	simulateHandCursorMovement(false);
+	    }
+	    else if(event.keyCode == 40) {
+	        //alert('DOWN was pressed');
+	    	kinectComponent.backOneLevel();
+	    }
+	});
 };
 
 //var getImageURLsForSubnodesOf = function(node)

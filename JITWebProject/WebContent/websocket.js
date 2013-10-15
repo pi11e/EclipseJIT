@@ -1,4 +1,8 @@
 var socket = undefined;
+var kinectServerAddress = "ws://localhost:8181/KinectHtml5";
+var useKinectKeyboardDebugMode = false;
+//var kinectServerAddress = "ws://192.168.178.23:8181/KinectHtml5";
+
 var closeConnection = function(){
 	
 	if(socket)
@@ -11,6 +15,11 @@ var openConnection = function()
 	{
 		console.log("Connection to kinect server already established.");
 		return;
+	}
+	
+	if(useKinectKeyboardDebugMode)
+	{
+		enableKeyboardKinect();
 	}
 		
 	
@@ -38,8 +47,8 @@ var openConnection = function()
 	
 	
     // Initialize a new web socket.
-    //socket = new WebSocket("ws://localhost:8181/KinectHtml5");
-    socket = new WebSocket("ws://192.168.178.23:8181/KinectHtml5");
+    socket = new WebSocket(kinectServerAddress);
+    
 
     // Connection established.
     socket.onopen = function () 
