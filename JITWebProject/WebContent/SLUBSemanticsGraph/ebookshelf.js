@@ -490,7 +490,10 @@ var getImageQueryForLevelTwoNode = function(levelOneParentName, levelTwoParentNa
 	// note: the amount of maximum results in the queries is doubled, because for every item returned, the query adds a delimiter character (";")
 	//	this means a resultset looking like this "result1;result2;result3;" actually has length 6 for the query engine, "result1" is the first item, ";" is the second item and so forth
 	//	this also means to get the amount specified by maximumResults, we have to actually double this factor since all the delimiter chars are thrown away later on
-	var returnUpToMaximum = "return subsequence($resultSet, 1,"+2*maximumResults+")";
+	
+	// pre-delimiterfix:
+	//var returnUpToMaximum = "return subsequence($resultSet, 1,"+2*maximumResults+")";
+	var returnUpToMaximum = "return subsequence($resultSet, 1,"+maximumResults+")";
 	
 	switch(levelOneParentName)
 	{
@@ -499,7 +502,7 @@ var getImageQueryForLevelTwoNode = function(levelOneParentName, levelTwoParentNa
 		 * Attach to each level one node the query to get its level two child nodes. Use this query to retrieve the image and thumbnail URLs. 
 		 */
 		case "Fotografen":
-			resultSet = "for $x in //obj where $x//a8450/a8490/text()='"+levelTwoParentName+"' return ($x//a8470//text(), ';') ";
+			resultSet = "for $x in //obj where $x//a8450/a8490/text()='"+levelTwoParentName+"' return ($x//a8470//text()) ";
 			
 			break;
 		case "Epochen":
@@ -522,7 +525,7 @@ var getImageQueryForLevelTwoNode = function(levelOneParentName, levelTwoParentNa
 					min = max-101;
 				}
 				
-				resultSet  = "for $x in //obj where count($x/a5064/a5071/text())=1 and xs:integer($x/a5064/a5071/text()) < "+max+" and xs:integer($x/a5064/a5071/text()) > "+min+"  order by xs:integer($x/a5064/a5071/text()) descending return ($x//a8470//text(), ';') ";
+				resultSet  = "for $x in //obj where count($x/a5064/a5071/text())=1 and xs:integer($x/a5064/a5071/text()) < "+max+" and xs:integer($x/a5064/a5071/text()) > "+min+"  order by xs:integer($x/a5064/a5071/text()) descending return ($x//a8470//text()) ";
 				
 			}
 			break;
@@ -538,18 +541,18 @@ var getImageQueryForLevelTwoNode = function(levelOneParentName, levelTwoParentNa
 					startsWithPrefix = 'Portfolio-Pöppelmann';
 				}
 				
-				resultSet = "for $x in //obj where count($x//a55df)=1 and starts-with($x//a55df,'"+startsWithPrefix+"') return ($x//a8470//text(), ';') ";
+				resultSet = "for $x in //obj where count($x//a55df)=1 and starts-with($x//a55df,'"+startsWithPrefix+"') return ($x//a8470//text()) ";
 			}
 			break;
 		case "Gattungen":
-			resultSet = "for $x in //obj where $x//a5220/text()='"+levelTwoParentName+"' return ($x//a8470//text(), ';') ";
+			resultSet = "for $x in //obj where $x//a5220/text()='"+levelTwoParentName+"' return ($x//a8470//text()) ";
 			break;
 		case "Länder":
 			// find childnodes of both $part1 and $part2
-			resultSet = "let $part1 := for $x in //obj where $x/aob26/a260a/text()='"+levelTwoParentName+"' return ($x//a8470//text(), ';') let $part2 := for $x in //obj where $x/a5108/a511a/text()='"+levelTwoParentName+"' return ($x//a8470//text(), ';') let $sum := ($part1, $part2) return ($sum) ";
+			resultSet = "let $part1 := for $x in //obj where $x/aob26/a260a/text()='"+levelTwoParentName+"' return ($x//a8470//text()) let $part2 := for $x in //obj where $x/a5108/a511a/text()='"+levelTwoParentName+"' return ($x//a8470//text()) let $sum := ($part1, $part2) return ($sum) ";
 			break;
 		case "Themen":
-			resultSet = "for $x in //obj where $x//aob00/a55b3/text()='"+levelTwoParentName+"' return ($x//a8470//text(), ';') ";
+			resultSet = "for $x in //obj where $x//aob00/a55b3/text()='"+levelTwoParentName+"' return ($x//a8470//text()) ";
 			break;
 		default:
 			break;
@@ -565,12 +568,17 @@ var getRandomImageQueryForLevelTwoNode = function(levelOneParentName, levelTwoPa
 	// to make use of the optimization techniques of BaseX, this should entirely be handled by the DB and NEVER by the JS frontend,
 	// since it will have horrible performance
 	
+	// note on random:integer -> http://docs.basex.org/wiki/Random_Module
+	// "Returns an integer value, either in the whole integer range or between 0 (inclusive) and the given maximum (exclusive)"
+
+	
 	// to get the entire result set query, strip the "XQUERY " prefix from an image query
 	var resultSet = getImageQueryForLevelTwoNode(levelOneParentName, levelTwoParentName).substring(7);
 	
-	var firstLetClause = "let $result := "+ resultSet;
-	var secondLetClause = "let $index := random:integer(xs:integer(50))*2 + 1 ";
-	var returnClause = "return $result[$index]";
+	var firstLetClause = " let $result := "+ resultSet;
+	//var secondLetClause = "let $index := random:integer(xs:integer(50))*2 + 1 ";
+	var secondLetClause = " let $index := random:integer(count($result)) + 1 "; // count($result) will range from 0 to count($result)-1, so we add 1 to the random int
+	var returnClause = " return $result[$index]";
 	
 	return "XQUERY " + firstLetClause+secondLetClause+returnClause;
 

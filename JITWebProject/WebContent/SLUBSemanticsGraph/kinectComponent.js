@@ -1109,13 +1109,13 @@ var getImageURLsForSubnodesOf = function(node)
 			return;
 		}
 		
-		// note: this query will respond with a number of URLs split by delimiter ";"
+		// note: this query will respond with a number of URLs split by delimiter ";" // note note: not anymore it won't; URLs will now only be split by a whitespace
 		var callback = function(data)
 		{
-			window.imageURLs = data.split(";");
+			var tempData = data.replace(/jpg/g, "jpg@");
+			window.imageURLs = tempData.split("@");
 			// push to gallery can occur within the query, since the query returns the entire result set
 			pushImagesToGallery(window.imageURLs, selectedNodeGlobalLevel);
-
 		};
 
 		// note: queryDB is declared in ebookshelf.js
