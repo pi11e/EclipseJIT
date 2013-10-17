@@ -514,7 +514,7 @@ var getImageQueryForLevelTwoNode = function(levelOneParentName, levelTwoParentNa
 				
 				//console.log("century = " + century + "; typeof century = " + (typeof century));
 				
-				if(century === 'NaN')
+				if(isNaN(century))
 				{
 					max = "1300";
 					min = "-9999";

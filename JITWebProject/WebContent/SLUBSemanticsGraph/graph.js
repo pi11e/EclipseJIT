@@ -50,16 +50,16 @@ avgl.Graph = function(data) {
       onClick: function(node) {
         node && self._onClick(node);
       },
-      onRightClick: function(node) {
-    	console.log("right click on node " + node.name + " with id " + node.id + " registered."); 
-    	if(node.data.href)
-		{
-    		var imageLink = node.data.href;
-    		console.log(imageLink);
-    		
-    		jQuery.slimbox(imageLink); //slimbox(url, [description, options])
-		}
-      },
+//      onRightClick: function(node) {
+//    	console.log("right click on node " + node.name + " with id " + node.id + " registered."); 
+//    	if(node.data.href)
+//		{
+//    		var imageLink = node.data.href;
+//    		console.log(imageLink);
+//    		
+//    		jQuery.slimbox(imageLink); //slimbox(url, [description, options])
+//		}
+//      },
       onMouseEnter: function(node) {
         node && (function() {
         	window.kinectComponent.setHighlightedNode(node);
@@ -202,9 +202,9 @@ avgl.Graph.prototype._onClick = function(node, event) {
       title = node.name;
   avgl.setTemporaryItem('avgl.grt', target);
   
-  //	hacky:
-  getImageURLsForSubnodesOf(node);
-
+  //	to support mouse debugging without kinect:
+  window.kinectComponent.centerNodeWithId(node.id);
+  
   return self.rgraph.onClick(target, {
     hideLabels: false,
     onComplete: function() 

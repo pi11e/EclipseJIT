@@ -216,21 +216,29 @@ window.kinectComponent =
 				{
 					this.toggleLabelForNode(currentNode);
 					// also, when going in lvl 2, we want to start the automatic slideshow
+					console.log("starting galleria slideshow play; Galleria.running = " + Galleria.get(0).running);
 					Galleria.get(0).play();
 				}
 				else
 				{
 					// when not going into lvl 2, we want to stop the slideshow
 					Galleria.get(0).pause();
+					console.log("stopping galleria slideshow play; Galleria.running = " + Galleria.get(0).running);
 				}
 				
-				// the node we're looking for does indeed exist
-				this.rgraph.onClick(nodeId, {  
-					 hideLabels: false  // keep showing labels during transition
-				});
+				
+				// use the onClick handler, but only if the node is not already in the root of the currently visible graph
+				if(nodeId !== this.rgraph.root)
+				{
+					// the node we're looking for does indeed exist
+					this.rgraph.onClick(nodeId, {  
+						 hideLabels: false  // keep showing labels during transition
+					});
+				}
 				
 				
-				getImageURLsForSubnodesOf(this.getNodeById(nodeId));
+				
+				getImageURLsForSubnodesOf(currentNode);
 				
 				
 			}
