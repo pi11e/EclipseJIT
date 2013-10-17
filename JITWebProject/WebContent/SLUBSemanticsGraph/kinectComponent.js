@@ -215,6 +215,13 @@ window.kinectComponent =
 				if(this.getGlobalLevel(currentNode) === 2)
 				{
 					this.toggleLabelForNode(currentNode);
+					// also, when going in lvl 2, we want to start the automatic slideshow
+					Galleria.get(0).play();
+				}
+				else
+				{
+					// when not going into lvl 2, we want to stop the slideshow
+					Galleria.get(0).pause();
 				}
 				
 				// the node we're looking for does indeed exist
@@ -869,6 +876,9 @@ var pushImagesToGallery = function(imageURLs, selectedNodeGlobalLevel)
 	console.log("global level: " + selectedNodeGlobalLevel);
 	console.log(imageURLs);
 	
+	
+	$('#leftcol').height(window.innerHeight*0.5);
+
 	// imageURLs as an array of string urls to jpg images
 	
 	// galleria wants data in this format:
@@ -926,12 +936,7 @@ var pushImagesToGallery = function(imageURLs, selectedNodeGlobalLevel)
 	var inFullscreenMode = false; // if the user is viewing images in fullscreen, stop slideshow
 	//window.userChangedImage = false; // if the user changed an image by interacting, that image should stay for 10 seconds; otherwise, slideshow runs at 3 seconds per image
 	 
-	
-
-	
-	
-	
-	
+		
 	if(!Galleria.running)
 	{
 		
@@ -955,23 +960,23 @@ var pushImagesToGallery = function(imageURLs, selectedNodeGlobalLevel)
 		Galleria.get(0).load(data);
 	}
 	
-	var autoplayValue = 3000; // default: slideshow with 3 seconds per image (= 3000 ms)
-	if(inFullscreenMode || selectedNodeGlobalLevel < 2)
-	{
-		autoplayValue = false; // no slideshow when in levels 0 or 1 or when displaying a full screen image
-	}
-	else if(userChangedImage)
-	{
-		autoplayValue = 10000;
-		
-	}
-	
-	if(autoplayValue) 
-	{
-		console.log("running galleria with autoplay value = " + autoplayValue);
-		Galleria.run('#galleria', {autoplay : autoplayValue});
-	}
-	// for possible options, see http://galleria.io/docs/options/
+//	var autoplayValue = 3000; // default: slideshow with 3 seconds per image (= 3000 ms)
+//	if(inFullscreenMode || selectedNodeGlobalLevel < 2)
+//	{
+//		autoplayValue = false; // no slideshow when in levels 0 or 1 or when displaying a full screen image
+//	}
+//	else if(userChangedImage)
+//	{
+//		autoplayValue = 10000;
+//		
+//	}
+//	
+//	if(autoplayValue) 
+//	{
+//		console.log("running galleria with autoplay value = " + autoplayValue);
+//		Galleria.run('#galleria', {autoplay : autoplayValue});
+//	}
+//	// for possible options, see http://galleria.io/docs/options/
 
 	
 	window.userChangedImage = false; // this needs to be re-set to default false 

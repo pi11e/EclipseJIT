@@ -2,6 +2,17 @@
 
 #galleria-loader{height:1px!important}
 
+/* centers thumbnails below stage */
+body .galleria-thumbnails {
+	margin: auto
+}
+
+/* adds border on active thumbnails 
+.galleria-thumbnails .galleria-image.active img {
+  border: solid 1px black;
+}
+disabled... doesn't look nice at all */
+
 .galleria-container {
     position: relative;
     overflow: hidden;
@@ -37,7 +48,7 @@
     width: 60px;
     background: #FFF;
     margin: 0 5px 0 0;
-    border: 1px solid #000;
+    border: 0px solid #000;
     float: left;
     cursor: pointer;
 }
