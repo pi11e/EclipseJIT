@@ -120,45 +120,63 @@ window.kinectComponent =
 				console.log("showing image at index " + imgIndex);
 				
 				this.showImageAtIndex(imgIndex);
+				
 				// show title for node
-				this.showTitleForNode(node);
+				// --> now handled by setupImgTitleCallback
+//				this.showTitleForNode(node);
 			}
 			
 			
 		},
 		
-		showTitleForNode : function(node)
-		{
-			setTitleLabel("");
+		setupImgTitleCallback : function(){ 
 			
-			if(this.getGlobalLevel(node) < 1)
-			{
-				// do nothing
-			}
-			else
-			{
-				// find the title of the image
-				var imageURL = Galleria.get(0).getActiveImage().src;
-				
-				console.log("getting title for image " + imageURL);
-								
-				
-				
-				// gets description and title
-				//var query = "XQUERY for $x in //obj where $x//a8470//text()='"+imageURL+"' return ($x//a5200//text(), ';', $x//a52df//text())";
-				// just title:
-				//var query = "XQUERY for $x in //obj where $x//a8470//text()='"+imageURL+"' return $x//a5200//text()";
-				
-				// optimized query:
-				var query = "XQUERY //obj//a5200//text()[../../a8450/a8470='"+imageURL+"']";
-				
-				queryDB(query, function(data)
-				{
-					//var tempData = data.split(';');
-					setTitleLabel(data);
-				}, 
-				false);
-			}
+			// bind to loadFinish
+			Galleria.on('image', function(e)
+					{
+						setTitleLabel("");
+						var that = window.kinectComponent;
+						
+						var node = that.highlightedNode;
+						
+						if(that.getGlobalLevel(node) < 1)
+						{
+							// do nothing
+						}
+						else
+						{
+							// find the title of the image
+							var imageURL = Galleria.get(0).getActiveImage().src;
+							
+							
+							console.log("highlighted node: " + node.name + "| getting title for image " + imageURL);
+							//console.log(e);				
+							
+							
+							// A: gets description and title
+							//var query = "XQUERY for $x in //obj where $x//a8470//text()='"+imageURL+"' return ($x//a5200//text(), ';', $x//a52df//text())";
+							// B: just title:
+							//var query = "XQUERY for $x in //obj where $x//a8470//text()='"+imageURL+"' return $x//a5200//text()";
+							
+							// optimized query:
+							var query = "XQUERY //obj//a52df//text()[../../a8450/a8470='"+imageURL+"']";
+							
+							queryDB(query, function(data)
+							{
+								//A:
+								//var tempData = data.split(';');
+								//var title = tempData[0];
+								//var description = tempData[1];
+								//B:
+								setTitleLabel(data);
+							}, 
+							false);
+							
+						}
+						
+					});
+			
+			
 			
 						
 		},
@@ -947,7 +965,7 @@ var pushImagesToGallery = function(imageURLs, selectedNodeGlobalLevel)
 		
 	if(!Galleria.running)
 	{
-		
+		// first run
 		Galleria.run('#galleria', 
 				{
 					dataSource: data,
@@ -960,6 +978,7 @@ var pushImagesToGallery = function(imageURLs, selectedNodeGlobalLevel)
 				});
 		
 
+		window.kinectComponent.setupImgTitleCallback();
 		
 		Galleria.running = true;
 	}
