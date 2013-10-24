@@ -133,52 +133,47 @@ window.kinectComponent =
 			
 			// bind to loadFinish
 			Galleria.on('image', function(e)
+			{
+				setTitleLabel("...");
+				setDescriptionLabel("...");
+				var that = window.kinectComponent;
+				
+				var node = that.highlightedNode;
+				
+				
+				if(that.getGlobalLevel(node) < 2)
+				{
+					if(node === null || node === undefined)
+						return;
+					
+					setTitleLabel(node.name);
+				}
+				else
+				{
+					// find the title of the image
+					var imageURL = Galleria.get(0).getActiveImage().src;
+										
+					// optimized querying:
+					var descriptionQuery = "XQUERY //obj//a52df//text()[../../a8450/a8470='"+imageURL+"']";
+					var titleQuery = "XQUERY //obj//a5200//text()[../../a8450/a8470='"+imageURL+"']";
+					
+					queryDB(titleQuery, function(data)
 					{
-						setTitleLabel("");
-						var that = window.kinectComponent;
-						
-						var node = that.highlightedNode;
-						
-						if(that.getGlobalLevel(node) < 1)
-						{
-							// do nothing
-						}
-						else
-						{
-							// find the title of the image
-							var imageURL = Galleria.get(0).getActiveImage().src;
-							
-							
-							console.log("highlighted node: " + node.name + "| getting title for image " + imageURL);
-							//console.log(e);				
-							
-							
-							// A: gets description and title
-							//var query = "XQUERY for $x in //obj where $x//a8470//text()='"+imageURL+"' return ($x//a5200//text(), ';', $x//a52df//text())";
-							// B: just title:
-							//var query = "XQUERY for $x in //obj where $x//a8470//text()='"+imageURL+"' return $x//a5200//text()";
-							
-							// optimized query:
-							var query = "XQUERY //obj//a52df//text()[../../a8450/a8470='"+imageURL+"']";
-							
-							queryDB(query, function(data)
-							{
-								//A:
-								//var tempData = data.split(';');
-								//var title = tempData[0];
-								//var description = tempData[1];
-								//B:
-								setTitleLabel(data);
-							}, 
-							false);
-							
-						}
-						
-					});
+						setTitleLabel(data.length < 2 ? "..." : data);
+					}, 
+					false);
+					
+					queryDB(descriptionQuery, function(data)
+					{
+						setDescriptionLabel(data.length < 2 ? "..." : data);
+					}, 
+					false);
+					
+				} // end of else branch
+				
+			}); // end of "image displayed on galleria stage" callback
 			
-			
-			
-						
+			// end of setupImgTitleCallback function						
 		},
 		
 		/**
@@ -1169,6 +1164,15 @@ var setTitleLabel = function(title)
 	// note: called by showImageAtIndex
 	
 	imgTitle.innerHTML = "<font size=5>"+title+"</font>";
+		
+};
+
+
+var setDescriptionLabel = function(description)
+{
+	// note: called by showImageAtIndex
+	
+	imgDescription.innerHTML = "<font size=3>"+description+"</font>";
 		
 };
 
