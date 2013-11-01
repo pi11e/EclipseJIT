@@ -134,18 +134,20 @@ window.kinectComponent =
 			// bind to loadFinish
 			Galleria.on('image', function(e)
 			{
+				
 				setTitleLabel("...");
 				setDescriptionLabel("...");
 				var that = window.kinectComponent;
+				var currentRootGlobalLevel = that.getGlobalLevel(that.getRoot());
 				
-				var node = that.highlightedNode;
+				// warning: in level 3, there will be no highlighted node (=== null)
 				
 				
-				if(that.getGlobalLevel(node) < 2)
+				if(currentRootGlobalLevel < 1) // note: null < 1 = true
 				{
+					var node = that.highlightedNode;
 					if(node === null || node === undefined)
 						return;
-					
 					setTitleLabel(node.name);
 				}
 				else
@@ -313,6 +315,9 @@ window.kinectComponent =
 		
 		
 		// helper functions
+		/**
+		 * @unused
+		 */
 		kinectCallbackHandler : function(kinectData)
 		{
 			switch(kinectData)
@@ -631,25 +636,25 @@ window.kinectComponent =
         		
         		
 
-        		// adjust position of the hand node
-        		var oldTheta = this.getNodeById("1").getPos().theta;
-        		if(oldTheta === 0) {oldTheta = 2*Math.PI;}
-        		
-        		var baseSpeed = 0.1;
-        		var newTheta = oldTheta + baseSpeed * accelerationFactor;
-        		//console.log("acceleration: " + accelerationFactor + "; newTheta: " + newTheta);
-        		
-        		// Polar(theta, rho) where theta is the angle and rho the norm (i.e. radius)
-        		var newPos = new $jit.Polar(newTheta, radius);  
-        		this.getNodeById("1").setPos(newPos);
-        		
-        		// set highlight to closest graph node
-        		var closestNode = this.getClosestNodeToHandCursor();
-        		//console.log("found closest node: " + closestNode);
-        		this.setHighlightedNode(closestNode);
-        		
-        		this.rgraph.plot();
+				// adjust position of the hand node
+				var oldTheta = this.getNodeById("1").getPos().theta;
+				if(oldTheta === 0) {oldTheta = 2*Math.PI;}
 				
+				var baseSpeed = 0.1;
+				var newTheta = oldTheta + baseSpeed * accelerationFactor;
+				//console.log("acceleration: " + accelerationFactor + "; newTheta: " + newTheta);
+				
+				// Polar(theta, rho) where theta is the angle and rho the norm (i.e. radius)
+				var newPos = new $jit.Polar(newTheta, radius);  
+				this.getNodeById("1").setPos(newPos);
+				
+				// set highlight to closest graph node
+				var closestNode = this.getClosestNodeToHandCursor();
+				//console.log("found closest node: " + closestNode);
+				this.setHighlightedNode(closestNode);
+				
+				this.rgraph.plot();
+								
 			}
 			
 		},
