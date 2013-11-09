@@ -48,8 +48,9 @@ public class DataServlet extends HttpServlet {
 		// allow only XQUERY:
 		if(query != null && query.startsWith("XQUERY"))
 		{
-			//System.out.println(new Timestamp().getDate() +" DataServlet | executing " + query);
-			this.getDbController().executeQuery(query, out);	
+			System.out.println(new Timestamp().getDate() +" DataServlet | executing " + query);
+			this.getDbController().executeQueryWithCache(query, out);
+			//this.getDbController().executeQuery(query, out);	
 		}
 		else
 		{

@@ -1,7 +1,10 @@
 package de.tudresden.mg.ebookshelf.data;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 
 import org.basex.BaseXServer;
@@ -17,13 +20,14 @@ public class BaseXController
 	private BaseXServer server = null;
 	
 	private ClientSession _session;
+	private Map<String, byte[]> cache;
 	
 	// for details on java singletons, see
 	// http://en.wikipedia.org/wiki/Singleton_pattern#The_solution_of_Bill_Pugh
 	private BaseXController()
 	{
 		// private constructor prevents instantiation by other classes
-		
+		 this.cache = new HashMap<String, byte[]>();
 	}
 	
 	public static BaseXController getInstance()
@@ -101,6 +105,29 @@ public class BaseXController
 //		session.execute(XQuery);
 //		
 //		session.close();
+	}
+	
+	public void executeQueryWithCache(String XQuery, OutputStream out) throws IOException
+	{
+		// check if query is cached
+		if(this.cache.containsKey(XQuery))
+		{
+			// if yes, write the content of the cache to the given output stream
+			out.write(this.cache.get(XQuery));
+		}
+		else
+		{
+			// if not, create temporary output stream
+			ByteArrayOutputStream cacheStream = new ByteArrayOutputStream();
+			// write query result to cacheStream
+			this.executeQuery(XQuery, cacheStream);
+			// and store the cacheStream's value as byte array
+			this.cache.put(XQuery, cacheStream.toByteArray());
+			// do not forget to also write the query result to the original out stream:
+			out.write(cacheStream.toByteArray());
+		}
+		
+		
 	}
 	
 	/**
