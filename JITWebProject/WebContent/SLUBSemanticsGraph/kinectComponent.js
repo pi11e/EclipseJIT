@@ -969,7 +969,7 @@ var pushImagesToGallery = function(imageURLs, selectedNodeGlobalLevel)
 		Galleria.run('#galleria', 
 				{
 					dataSource: data,
-					height: window.innerHeight*0.5,
+					height: window.innerHeight*0.4,
 					width: window.innerWidth,
 					autoplay : false,
 					pauseOnInteraction : inFullscreenMode,
